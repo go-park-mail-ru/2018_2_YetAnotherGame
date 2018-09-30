@@ -2,11 +2,13 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"goback/models"
 	"net/http"
 	"os/exec"
 	"sort"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -31,6 +33,7 @@ func SignUp(ids map[string]string, users map[string]*models.User, w http.Respons
 	id, _ := exec.Command("uuidgen").Output()
 	//n := bytes.Index(id, []byte{0})
 	stringId := string(id[:])
+	stringId = strings.Trim(stringId, "\n")
 	users[stringId]=&user
 	ids[user.Email]=stringId
 
@@ -44,17 +47,24 @@ func SignUp(ids map[string]string, users map[string]*models.User, w http.Respons
 
 	b, _ := json.Marshal(stringId)
 	w.Write(b)
+	fmt.Println("reg")
 }
 
 
+type auth struct {
+	password string
+	email    string
+}
 
-
+//DOESNT WORK
 func Login(ids map[string]string, users map[string]*models.User, w http.ResponseWriter, r *http.Request) {
-
-	password := r.FormValue("password")
-	email := r.FormValue("email")
-	user_id := ids[email]
-	if password == "" || email == "" {
+	fmt.Println("log")
+	//password := r.FormValue("password")
+	//email := r.FormValue("email")
+	cred:=&auth{}
+	json.NewDecoder(r.Body).Decode(&cred)
+	user_id := ids[cred.email]
+	if cred.password == "" || cred.email == "" {
 
 		w.WriteHeader(http.StatusBadRequest)
 		w.Header().Set("Content-Type", "application/json")
@@ -68,7 +78,7 @@ func Login(ids map[string]string, users map[string]*models.User, w http.Response
 		b, _ := json.Marshal("Неверный E-Mail")
 		w.Write(b)
 	}
-	if users[user_id].Password != password {
+	if users[user_id].Password != cred.password {
 
 		w.WriteHeader(http.StatusBadRequest)
 		w.Header().Set("Content-Type", "application/json")
@@ -76,7 +86,7 @@ func Login(ids map[string]string, users map[string]*models.User, w http.Response
 		w.Write(b)
 	}
 
-	ids[email] = user_id
+	ids[cred.email] = user_id
 	cookie := &http.Cookie{
 		Name:    "sessionid",
 		Value:   user_id,
@@ -92,7 +102,7 @@ func Login(ids map[string]string, users map[string]*models.User, w http.Response
 
 
 func Me(users map[string]*models.User, w http.ResponseWriter, r *http.Request) {
-
+	fmt.Println("me")
 	id,_:= r.Cookie("sessionid")
 	id2:=id.Value
 	if _, ok := users[id2]; !ok {
