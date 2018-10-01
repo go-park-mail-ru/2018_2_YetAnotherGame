@@ -9,3 +9,11 @@ type User struct {
 	Password string `json:"password"`
 	Score int `json:"score"`
 }
+
+
+
+
+type Auth struct {
+	Email string `json:"email"`
+	Password string `json:"password"`
+}

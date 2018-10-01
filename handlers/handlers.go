@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"goback/models"
 	"net/http"
 	"os/exec"
@@ -16,22 +15,18 @@ import (
 
 func SignUp(ids map[string]string, users map[string]*models.User, w http.ResponseWriter, r *http.Request) {
 
-	//password := r.FormValue("password")
-	//email := r.FormValue("email")
-	//username := r.FormValue("username")
-	//first_name := r.FormValue("first_name")
-	//last_name := r.FormValue("last_name")
+
 	user:=models.User{}
 	json.NewDecoder(r.Body).Decode(&user)
 	if _, ok := ids[user.Email]; ok {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Header().Set("Content-Type", "application/json")
-		b, _ := json.Marshal("already exists")
-		w.Write(b)
+		message, _ := json.Marshal("already exists")
+		w.Write(message)
 	}
 
 	id, _ := exec.Command("uuidgen").Output()
-	//n := bytes.Index(id, []byte{0})
+
 	stringId := string(id[:])
 	stringId = strings.Trim(stringId, "\n")
 	users[stringId]=&user
@@ -45,48 +40,40 @@ func SignUp(ids map[string]string, users map[string]*models.User, w http.Respons
 	http.SetCookie(w, cookie)
 	w.WriteHeader(http.StatusCreated)
 
-	b, _ := json.Marshal(stringId)
-	w.Write(b)
-	fmt.Println("reg")
+	message, _ := json.Marshal(stringId)
+	w.Write(message)
+
 }
 
 
-type auth struct {
-	password string
-	email    string
-}
 
-//DOESNT WORK
 func Login(ids map[string]string, users map[string]*models.User, w http.ResponseWriter, r *http.Request) {
-	fmt.Println("log")
-	//password := r.FormValue("password")
-	//email := r.FormValue("email")
-	cred:=&auth{}
+	cred:=models.Auth{}
 	json.NewDecoder(r.Body).Decode(&cred)
-	user_id := ids[cred.email]
-	if cred.password == "" || cred.email == "" {
+	user_id := ids[cred.Email]
+	if cred.Password == "" || cred.Email == "" {
 
 		w.WriteHeader(http.StatusBadRequest)
 		w.Header().Set("Content-Type", "application/json")
-		b, _ := json.Marshal("Не указан E-Mail или пароль")
-		w.Write(b)
+		message, _ := json.Marshal("Не указан E-Mail или пароль")
+		w.Write(message)
 	}
 
 	if _, ok := users[user_id]; !ok {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Header().Set("Content-Type", "application/json")
-		b, _ := json.Marshal("Неверный E-Mail")
-		w.Write(b)
+		message, _ := json.Marshal("Неверный E-Mail")
+		w.Write(message)
 	}
-	if users[user_id].Password != cred.password {
+	if users[user_id].Password != cred.Password {
 
 		w.WriteHeader(http.StatusBadRequest)
 		w.Header().Set("Content-Type", "application/json")
-		b, _ := json.Marshal("Неверный пароль")
-		w.Write(b)
+		message, _ := json.Marshal("Неверный пароль")
+		w.Write(message)
 	}
 
-	ids[cred.email] = user_id
+	ids[cred.Email] = user_id
 	cookie := &http.Cookie{
 		Name:    "sessionid",
 		Value:   user_id,
@@ -95,14 +82,14 @@ func Login(ids map[string]string, users map[string]*models.User, w http.Response
 	http.SetCookie(w, cookie)
 	w.WriteHeader(http.StatusCreated)
 
-	b, _ := json.Marshal(user_id)
-	w.Write(b)
+	message, _ := json.Marshal(user_id)
+	w.Write(message)
 
 }
 
 
 func Me(users map[string]*models.User, w http.ResponseWriter, r *http.Request) {
-	fmt.Println("me")
+
 	id,_:= r.Cookie("sessionid")
 	id2:=id.Value
 	if _, ok := users[id2]; !ok {
@@ -111,16 +98,55 @@ func Me(users map[string]*models.User, w http.ResponseWriter, r *http.Request) {
 	users[id2].Score+=1
 	w.WriteHeader(http.StatusCreated)
 	w.Header().Set("Content-Type", "application/json")
-	b, _ := json.Marshal(users[id2])
-	w.Write(b)
+	message, _ := json.Marshal(users[id2])
+	w.Write(message)
 }
+
+
+func Update(users map[string]*models.User, w http.ResponseWriter, r *http.Request) {
+
+	tmp := models.User{}
+	json.NewDecoder(r.Body).Decode(&tmp)
+	id,_:= r.Cookie("sessionid")
+	id2:=id.Value
+	user_id := id2
+	//fmt.Println(r.MatchString("peach"))
+
+	if _, ok := users[user_id]; !ok {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Header().Set("Content-Type", "application/json")
+		message, _ := json.Marshal("no users")
+		w.Write(message)
+	}
+	users[user_id].Email=tmp.Email
+	users[user_id].First_name=tmp.First_name
+	users[user_id].Last_name=tmp.Last_name
+	users[user_id].Username=tmp.Username
+
+}
+
+func Logout( w http.ResponseWriter, r *http.Request) {
+	id,_:= r.Cookie("sessionid")
+	id2:=id.Value
+	cookie := &http.Cookie{
+		Name:    "sessionid",
+		Value:   id2,
+		Expires: time.Now(),
+	}
+	http.SetCookie(w, cookie)
+
+
+	w.Header().Set("Content-Type", "application/json")
+	message, _ := json.Marshal(id2)
+	w.Write(message)
+}
+
+
 
 
 
 func Leaders(users map[string]*models.User, w http.ResponseWriter, r *http.Request) {
 
-
-	//fmt.Println(c)
 limit:=6
 offset:=0
 
@@ -142,7 +168,6 @@ if r.URL.Query()["limit"]!=nil{
 		values = append(values, value)
 	}
 	l:=len(values)
-	//fmt.Println(eatureVector)
 	sort.Slice(values, func(i, j int) bool {
 		return values[i].Score > values[j].Score
 	})
@@ -151,17 +176,10 @@ if r.URL.Query()["limit"]!=nil{
 		values2 = append(values2, value)
 	}
 	values2 = append(values2, l)
-	//fmt.Println(values)
-	b, _:= json.Marshal(values2)
-	//fmt.Println(b)
+	message, _:= json.Marshal(values2)
 
-	//fmt.Println(b)
-	//t, _:= json.Marshal(len(values))
-
-	//fmt.Println(len(values))
 	w.Header().Set("Content-Type", "application/json")
-	w.Write(b)
+	w.Write(message)
 
-	//w.Write(t)
 
 }

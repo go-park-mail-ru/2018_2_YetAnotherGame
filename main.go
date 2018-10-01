@@ -3,10 +3,10 @@ package main
 import (
 
 	"fmt"
-	"github.com/gorilla/mux"
+	//"github.com/gorilla/mux"
 	"goback/handlers"
 	"goback/models"
-	"log"
+	//"log"
 	"net/http"
 
 	"github.com/rs/cors"
@@ -37,23 +37,29 @@ func main() {
 		AllowedMethods: []string{"GET", "HEAD", "POST", "PUT", "OPTIONS"}, // Allowing only get, just an example
 	})
 
-	router := mux.NewRouter()
+
+	mux := http.NewServeMux()
+	//router := mux.NewRouter()
 
 
-	router.HandleFunc("/leaders", func (output http.ResponseWriter, request *http.Request) {
+	mux.HandleFunc("/leaders", func (output http.ResponseWriter, request *http.Request) {
 		handlers.Leaders(users, output, request)})
-	router.HandleFunc("/signup",  func ( output http.ResponseWriter, request *http.Request) {
-		handlers.SignUp(ids, users, output, request)}).Methods("POST")
+	mux.HandleFunc("/signup",  func ( output http.ResponseWriter, request *http.Request) {
+		handlers.SignUp(ids, users, output, request)})
 
-	router.HandleFunc("/login",  func ( output http.ResponseWriter, request *http.Request) {
+	mux.HandleFunc("/login",  func ( output http.ResponseWriter, request *http.Request) {
 		handlers.Login(ids, users, output, request)})
 
-	router.HandleFunc("/me",  func ( output http.ResponseWriter, request *http.Request) {
+	mux.HandleFunc("/me",  func ( output http.ResponseWriter, request *http.Request) {
 		handlers.Me(users, output, request)})
-
-	http.Handle("/", router)
+	mux.HandleFunc("/logout",  handlers.Logout)
+	mux.HandleFunc("/update",  func ( output http.ResponseWriter, request *http.Request) {
+		handlers.Update(users, output, request)})
+	//http.Handle("/", router)
 
 	fmt.Println("Server is listening...")
-	log.Fatal(http.ListenAndServe(":8000", c.Handler(router)))
+	//log.Fatal(http.ListenAndServe(":8000", c.Handler(router)))
+	handler := c.Handler(mux)
+	http.ListenAndServe(":8000", handler)
 }
 
