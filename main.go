@@ -1,9 +1,8 @@
 package main
 
 import (
-
 	"fmt"
-	//"github.com/gorilla/mux"
+	"github.com/gorilla/mux"
 	"goback/handlers"
 	"goback/models"
 	//"log"
@@ -34,32 +33,32 @@ func main() {
 	c := cors.New(cors.Options{
 		AllowCredentials: true,
 		AllowedOrigins: []string{"http://127.0.0.1:3000"}, // All origins
-		AllowedMethods: []string{"GET", "HEAD", "POST", "PUT", "OPTIONS"}, // Allowing only get, just an example
+		AllowedMethods: []string{"GET", "HEAD", "POST", "PUT", "OPTIONS", "DELETE"}, // Allowing only get, just an example
 	})
 
 
-	mux := http.NewServeMux()
-	//router := mux.NewRouter()
+	//mux := http.NewServeMux()
+	router := mux.NewRouter()
 
 
-	mux.HandleFunc("/leaders", func (output http.ResponseWriter, request *http.Request) {
-		handlers.Leaders(users, output, request)})
-	mux.HandleFunc("/signup",  func ( output http.ResponseWriter, request *http.Request) {
-		handlers.SignUp(ids, users, output, request)})
+	router.HandleFunc("/user", func (output http.ResponseWriter, request *http.Request) {
+		handlers.Leaders(users, output, request)}).Methods("GET")
+	router.HandleFunc("/session/new",  func ( output http.ResponseWriter, request *http.Request) {
+		handlers.SignUp(ids, users, output, request)}).Methods("POST")
 
-	mux.HandleFunc("/login",  func ( output http.ResponseWriter, request *http.Request) {
-		handlers.Login(ids, users, output, request)})
+	router.HandleFunc("/session",  func ( output http.ResponseWriter, request *http.Request) {
+		handlers.Login(ids, users, output, request)}).Methods("POST")
 
-	mux.HandleFunc("/me",  func ( output http.ResponseWriter, request *http.Request) {
-		handlers.Me(users, output, request)})
-	mux.HandleFunc("/logout",  handlers.Logout)
-	mux.HandleFunc("/update",  func ( output http.ResponseWriter, request *http.Request) {
-		handlers.Update(users, output, request)})
-	//http.Handle("/", router)
+	router.HandleFunc("/user/me",  func ( output http.ResponseWriter, request *http.Request) {
+		handlers.Me(users, output, request)}).Methods("GET")
+	router.HandleFunc("/session",  handlers.Logout).Methods("DELETE")
+	router.HandleFunc("/user/me",  func ( output http.ResponseWriter, request *http.Request) {
+		handlers.Update(users, output, request)}).Methods("POST")
+	http.Handle("/", router)
 
 	fmt.Println("Server is listening...")
 	//log.Fatal(http.ListenAndServe(":8000", c.Handler(router)))
-	handler := c.Handler(mux)
+	handler := c.Handler(router)
 	http.ListenAndServe(":8000", handler)
 }
 
