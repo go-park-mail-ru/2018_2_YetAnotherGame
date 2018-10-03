@@ -7,12 +7,11 @@ Backend golang server
 | Method name | Path | Description | Data |
 | ----------- | ---- | ----------- | ---- |
 | GET | /user | return all users | ---- |
-| GET | /user/1 | return user with id: 1 | ---- |
-| POST | /user/ | create new user | ---- |
-| PUT | /user/ | update current user  | ---- |
-| GET | /session/ | get current session id | ---- |
-| POST | /session/1 | login | ---- |
-| DELETE | /session/1 | logout | ---- |
+| POST | /user/me | update current user  | ---- |
+| GET | /user/me | get current session id | ---- |
+| POST | /session/new | create new user | ---- |
+| POST | /session | login | ---- |
+| DELETE | /session | logout | ---- |
 
 ## Authors
 
