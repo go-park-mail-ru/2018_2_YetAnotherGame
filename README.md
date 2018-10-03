@@ -16,7 +16,7 @@ Backend golang server
 
 ## Authors
 
-* **Denis Makarov** - *Initial work* - [PurpleBooth](https://github.com/makdenis)
-* **Aleksand Gavrilyuk** - *Initial work* - [PurpleBooth](https://github.com/GavrilyukAG)
-* **Rodion Farrahov** - *Initial work* - [PurpleBooth](https://github.com/RusPatrick)
-* **Darya Kalugina** - *Initial work* - [PurpleBooth](https://github.com/kaluginadaria)
+* **Denis Makarov** - [@makdenis](https://github.com/makdenis)
+* **Aleksand Gavrilyuk** - [@GavrilyukAG](https://github.com/GavrilyukAG)
+* **Rodion Farrahov** - [@RusPatrick](https://github.com/RusPatrick)
+* **Darya Kalugina** - [@kaluginadaria](https://github.com/kaluginadaria)
