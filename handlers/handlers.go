@@ -3,7 +3,6 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
-	"goback/models"
 	"io/ioutil"
 	"mime/multipart"
 	"net/http"
@@ -12,6 +11,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"../models"
 )
 
 func SignUp(ids map[string]string, users map[string]*models.User, w http.ResponseWriter, r *http.Request) {
@@ -86,7 +87,6 @@ func Login(ids map[string]string, users map[string]*models.User, w http.Response
 }
 
 func Me(users map[string]*models.User, avatars map[string]string, w http.ResponseWriter, r *http.Request) {
-	body := []interface{}{}
 
 	id, _ := r.Cookie("sessionid")
 	id2 := id.Value
@@ -95,16 +95,22 @@ func Me(users map[string]*models.User, avatars map[string]string, w http.Respons
 		w.WriteHeader(http.StatusBadRequest)
 	}
 
-	body = append(body, users[id2])
 	users[id2].Score += 1
 
-	if src, ok := avatars[users[id2].email]; ok {
-		body = append(body, src)
+	// TODO: отправить пользователя и src аватара
+	
+	// body := []interface{}{}
+	// body = append(body, users[id2])
+	// body := map[string]string{}
+	// if src, ok := avatars[users[id2].Email]; ok {
+	// 	body["image"] = src
 	}
+	// src := avatars[users[id2].Email]
 
 	w.WriteHeader(http.StatusCreated)
 	w.Header().Set("Content-Type", "application/json")
-	message, _ := json.Marshal(body)
+	message, _ := json.Marshal(users[id2])
+	// message, _ := json.Marshal(body)
 	w.Write(message)
 }
 
@@ -190,6 +196,7 @@ func Upload(avatars map[string]string, w http.ResponseWriter, r *http.Request) {
 	}
 
 	file, handle, err := r.FormFile("image")
+	fmt.Printf(handle.Filename)
 	if err != nil {
 		fmt.Fprintf(w, "%v", err)
 		return
@@ -200,14 +207,16 @@ func Upload(avatars map[string]string, w http.ResponseWriter, r *http.Request) {
 	email := r.FormValue("email")
 	fmt.Println(email)
 
-	mimeType := handle.Header.Get("Content-Type")
-	switch mimeType {
-	case "image/jpeg", "image/png":
-		// saveFile(w, file, handle)
-		saveFile(w, file, email, handle, avatars)
-	default:
-		jsonResponse(w, http.StatusBadRequest, "The format file is not valid.")
-	}
+	saveFile(w, file, email, handle, avatars)
+
+	// mimeType := handle.Header.Get("Content-Type")
+	// switch mimeType {
+	// case "image/jpeg", "image/png":
+	// 	// saveFile(w, file, handle)
+	// 	saveFile(w, file, email, handle, avatars)
+	// default:
+	// 	jsonResponse(w, http.StatusBadRequest, "The format file is not valid.")
+	// }
 }
 
 func saveFile(w http.ResponseWriter, file multipart.File, email string, handle *multipart.FileHeader, avatars map[string]string) {
@@ -217,13 +226,16 @@ func saveFile(w http.ResponseWriter, file multipart.File, email string, handle *
 		return
 	}
 
-	src := "../uploads/" + handle.Filename
+	// src := "./uploads/" + handle.Filename
+	// TODO: сделать через path
+	src := "/home/alexandr/go/src/back/2018_2_YetAnotherGame/uploads/" + email + handle.Filename
 	err = ioutil.WriteFile(src, data, 0666)
 	if err != nil {
 		fmt.Fprintf(w, "%v", err)
 		return
 	}
 	avatars[email] = src
+	// fmt.Println(avatars[email])
 
 	jsonResponse(w, http.StatusCreated, "File uploaded successfully!.")
 }

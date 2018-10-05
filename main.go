@@ -2,9 +2,11 @@ package main
 
 import (
 	"fmt"
-	//"github.com/gorilla/mux"
-	"goback/handlers"
-	"goback/models"
+
+	"./handlers"
+	"./models"
+
+	"github.com/gorilla/mux"
 	//"log"
 	"net/http"
 
@@ -32,43 +34,44 @@ func main() {
 
 	c := cors.New(cors.Options{
 		AllowCredentials: true,
-		AllowedOrigins:   []string{"http://127.0.0.1:3000"},                 // All origins
-		AllowedMethods:   []string{"GET", "HEAD", "POST", "PUT", "OPTIONS"}, // Allowing only get, just an example
+		AllowedOrigins:   []string{"http://127.0.0.1:3000"},                           // All origins
+		AllowedMethods:   []string{"GET", "HEAD", "POST", "PUT", "OPTIONS", "DELETE"}, // Allowing only get, just an example
 	})
 
-	mux := http.NewServeMux()
-	//router := mux.NewRouter()
+	//mux := http.NewServeMux()
+	router := mux.NewRouter()
 
-	mux.HandleFunc("/leaders", func(output http.ResponseWriter, request *http.Request) {
+	router.HandleFunc("/user", func(output http.ResponseWriter, request *http.Request) {
 		handlers.Leaders(users, output, request)
-	})
+	}).Methods("GET")
 
-	mux.HandleFunc("/signup", func(output http.ResponseWriter, request *http.Request) {
+	router.HandleFunc("/session/new", func(output http.ResponseWriter, request *http.Request) {
 		handlers.SignUp(ids, users, output, request)
-	})
+	}).Methods("POST")
 
-	mux.HandleFunc("/login", func(output http.ResponseWriter, request *http.Request) {
+	router.HandleFunc("/session", func(output http.ResponseWriter, request *http.Request) {
 		handlers.Login(ids, users, output, request)
-	})
+	}).Methods("POST")
 
-	mux.HandleFunc("/me", func(output http.ResponseWriter, request *http.Request) {
+	router.HandleFunc("/user/me", func(output http.ResponseWriter, request *http.Request) {
 		handlers.Me(users, avatars, output, request)
-	})
+	}).Methods("GET")
 
-	mux.HandleFunc("/logout", handlers.Logout)
+	router.HandleFunc("/session", handlers.Logout).Methods("DELETE")
 
-	mux.HandleFunc("/update", func(output http.ResponseWriter, request *http.Request) {
+	router.HandleFunc("/user/me", func(output http.ResponseWriter, request *http.Request) {
 		handlers.Update(users, output, request)
-	})
+	}).Methods("POST")
 
-	mux.HandleFunc("/upload", func(output http.ResponseWriter, request *http.Request) {
+	// TODO: изменить по ресту
+	router.HandleFunc("/upload", func(output http.ResponseWriter, request *http.Request) {
 		handlers.Upload(avatars, output, request)
 	})
 
-	//http.Handle("/", router)
+	http.Handle("/", router)
 
 	fmt.Println("Server is listening...")
 	//log.Fatal(http.ListenAndServe(":8000", c.Handler(router)))
-	handler := c.Handler(mux)
+	handler := c.Handler(router)
 	http.ListenAndServe(":8000", handler)
 }
