@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 
-	"./handlers"
-	"./models"
+	"goback/handlers"
+	"goback/models"
 
 	"github.com/gorilla/mux"
 	//"log"
@@ -70,7 +70,7 @@ func main() {
 
 	http.Handle("/", router)
 
-	fmt.Println("Server is listening...")
+	fmt.Println("Server listening port 8000")
 	//log.Fatal(http.ListenAndServe(":8000", c.Handler(router)))
 	handler := c.Handler(router)
 	http.ListenAndServe(":8000", handler)

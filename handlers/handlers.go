@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"math"
 	"mime/multipart"
 	"net/http"
 	"os/exec"
@@ -12,11 +13,11 @@ import (
 	"strings"
 	"time"
 
-	"../models"
+	"goback/models"
 )
 
+//SignUp ..
 func SignUp(ids map[string]string, users map[string]*models.User, w http.ResponseWriter, r *http.Request) {
-
 	user := models.User{}
 	json.NewDecoder(r.Body).Decode(&user)
 	if _, ok := ids[user.Email]; ok {
@@ -28,24 +29,24 @@ func SignUp(ids map[string]string, users map[string]*models.User, w http.Respons
 
 	id, _ := exec.Command("uuidgen").Output()
 
-	stringId := string(id[:])
-	stringId = strings.Trim(stringId, "\n")
-	users[stringId] = &user
-	ids[user.Email] = stringId
+	stringID := string(id[:])
+	stringID = strings.Trim(stringID, "\n")
+	users[stringID] = &user
+	ids[user.Email] = stringID
 
 	cookie := &http.Cookie{
 		Name:    "sessionid",
-		Value:   stringId,
+		Value:   stringID,
 		Expires: time.Now().Add(60 * time.Minute),
 	}
 	http.SetCookie(w, cookie)
 	w.WriteHeader(http.StatusCreated)
 
-	message, _ := json.Marshal(stringId)
+	message, _ := json.Marshal(stringID)
 	w.Write(message)
-
 }
 
+//Login ..
 func Login(ids map[string]string, users map[string]*models.User, w http.ResponseWriter, r *http.Request) {
 	cred := models.Auth{}
 	json.NewDecoder(r.Body).Decode(&cred)
@@ -86,8 +87,8 @@ func Login(ids map[string]string, users map[string]*models.User, w http.Response
 
 }
 
+//Me ..
 func Me(users map[string]*models.User, avatars map[string]string, w http.ResponseWriter, r *http.Request) {
-
 	id, _ := r.Cookie("sessionid")
 	id2 := id.Value
 
@@ -95,16 +96,16 @@ func Me(users map[string]*models.User, avatars map[string]string, w http.Respons
 		w.WriteHeader(http.StatusBadRequest)
 	}
 
-	users[id2].Score += 1
+	users[id2].Score++
 
 	// TODO: отправить пользователя и src аватара
-	
+
 	// body := []interface{}{}
 	// body = append(body, users[id2])
 	// body := map[string]string{}
 	// if src, ok := avatars[users[id2].Email]; ok {
 	// 	body["image"] = src
-	}
+	//}
 	// src := avatars[users[id2].Email]
 
 	w.WriteHeader(http.StatusCreated)
@@ -114,6 +115,7 @@ func Me(users map[string]*models.User, avatars map[string]string, w http.Respons
 	w.Write(message)
 }
 
+//Update ..
 func Update(users map[string]*models.User, w http.ResponseWriter, r *http.Request) {
 
 	tmp := models.User{}
@@ -136,6 +138,7 @@ func Update(users map[string]*models.User, w http.ResponseWriter, r *http.Reques
 
 }
 
+//Logout ..
 func Logout(w http.ResponseWriter, r *http.Request) {
 	id, _ := r.Cookie("sessionid")
 	id2 := id.Value
@@ -151,44 +154,42 @@ func Logout(w http.ResponseWriter, r *http.Request) {
 	w.Write(message)
 }
 
+//Leaders ..
 func Leaders(users map[string]*models.User, w http.ResponseWriter, r *http.Request) {
+	numberOfPage := 0
+	countOfString := 3
+	canNext := true
 
-	limit := 6
-	offset := 0
-
-	if r.URL.Query()["limit"] != nil {
-		limit, _ = strconv.Atoi(r.URL.Query()["limit"][0])
-
-	}
-
-	if r.URL.Query()["offset"] != nil {
-		offset, _ = strconv.Atoi(r.URL.Query()["offset"][0])
-
+	if r.URL.Query()["numPage"] != nil {
+		numberOfPage, _ = strconv.Atoi(r.URL.Query()["numPage"][0])
 	}
 
 	values2 := []interface{}{}
-	//fmt.Println(limit,offset)
 	values := make([]*models.User, 0, len(users))
 
 	for _, value := range users {
 		values = append(values, value)
 	}
-	l := len(values)
 	sort.Slice(values, func(i, j int) bool {
 		return values[i].Score > values[j].Score
 	})
-	values = values[offset : limit+offset]
+
+	if int(math.Ceil(float64(len(users))/float64(countOfString)))-1 < numberOfPage+1 {
+		canNext = false
+	}
+
+	values = values[numberOfPage*countOfString : numberOfPage*countOfString+countOfString]
 	for _, value := range values {
 		values2 = append(values2, value)
 	}
-	values2 = append(values2, l)
+	values2 = append(values2, canNext)
 	message, _ := json.Marshal(values2)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(message)
-
 }
 
+//Upload ..
 func Upload(avatars map[string]string, w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
