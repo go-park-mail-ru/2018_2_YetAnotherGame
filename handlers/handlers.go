@@ -2,15 +2,21 @@ package handlers
 
 import (
 	"encoding/json"
-	"goback/models"
+	"fmt"
+	"io/ioutil"
+	"math"
+	"mime/multipart"
 	"net/http"
 	"os/exec"
 	"sort"
 	"strconv"
 	"strings"
 	"time"
+
+	"goback/models"
 )
 
+//SignUp ..
 func SignUp(ids map[string]string, users map[string]*models.User, w http.ResponseWriter, r *http.Request) {
 
 	user := models.User{}
@@ -24,26 +30,27 @@ func SignUp(ids map[string]string, users map[string]*models.User, w http.Respons
 
 	id, _ := exec.Command("uuidgen").Output()
 
-	stringId := string(id[:])
-	stringId = strings.Trim(stringId, "\n")
-	users[stringId] = &user
-	ids[user.Email] = stringId
+	stringID := string(id[:])
+	stringID = strings.Trim(stringID, "\n")
+	users[stringID] = &user
+	ids[user.Email] = stringID
 
 	cookie := &http.Cookie{
 		Name:    "sessionid",
-		Value:   stringId,
+		Value:   stringID,
 		Expires: time.Now().Add(60 * time.Minute),
+
 		Path:    "/",
 	}
 	http.SetCookie(w, cookie)
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 
-	message, _ := json.Marshal(stringId)
+	message, _ := json.Marshal(stringID)
 	w.Write(message)
-
 }
 
+//Login ..
 func Login(ids map[string]string, users map[string]*models.User, w http.ResponseWriter, r *http.Request) {
 	cred := models.Auth{}
 	json.NewDecoder(r.Body).Decode(&cred)
@@ -85,21 +92,37 @@ func Login(ids map[string]string, users map[string]*models.User, w http.Response
 
 }
 
-func Me(users map[string]*models.User, w http.ResponseWriter, r *http.Request) {
-
+//Me ..
+func Me(users map[string]*models.User, avatars map[string]string, w http.ResponseWriter, r *http.Request) {
 	id, _ := r.Cookie("sessionid")
 	id2 := id.Value
+
 	if _, ok := users[id2]; !ok {
 		w.WriteHeader(http.StatusBadRequest)
 	}
-	users[id2].Score += 1
+
+	users[id2].Score++
+
+	// TODO: отправить пользователя и src аватара
+
+	// body := []interface{}{}
+	// body = append(body, users[id2])
+	// body := map[string]string{}
+	// if src, ok := avatars[users[id2].Email]; ok {
+	// 	body["image"] = src
+	//}
+	// src := avatars[users[id2].Email]
+
+	w.WriteHeader(http.StatusCreated)
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 
 	message, _ := json.Marshal(users[id2])
+	// message, _ := json.Marshal(body)
 	w.Write(message)
 }
 
+//Update ..
 func Update(users map[string]*models.User, w http.ResponseWriter, r *http.Request) {
 
 	tmp := models.User{}
@@ -123,6 +146,7 @@ func Update(users map[string]*models.User, w http.ResponseWriter, r *http.Reques
 
 }
 
+//Logout ..
 func Logout(w http.ResponseWriter, r *http.Request) {
 	id, _ := r.Cookie("sessionid")
 	id2 := id.Value
@@ -138,40 +162,99 @@ func Logout(w http.ResponseWriter, r *http.Request) {
 	w.Write(message)
 }
 
+//Leaders ..
 func Leaders(users map[string]*models.User, w http.ResponseWriter, r *http.Request) {
-
-	limit := 6
-	offset := 0
-
-	if r.URL.Query()["limit"] != nil {
-		limit, _ = strconv.Atoi(r.URL.Query()["limit"][0])
-
-	}
-
-	if r.URL.Query()["limit"] != nil {
-		offset, _ = strconv.Atoi(r.URL.Query()["offset"][0])
+	numberOfPage := 0
+	countOfString := 3
+	canNext := true
+  
+	if r.URL.Query()["numPage"] != nil {
+		numberOfPage, _ = strconv.Atoi(r.URL.Query()["numPage"][0])
 
 	}
 
 	values2 := []interface{}{}
-	//fmt.Println(limit,offset)
 	values := make([]*models.User, 0, len(users))
 
 	for _, value := range users {
 		values = append(values, value)
 	}
-	l := len(values)
+  
 	sort.Slice(values, func(i, j int) bool {
 		return values[i].Score > values[j].Score
 	})
-	values = values[offset : limit+offset]
+  
+	// проверяем можно ли дальше листать
+	if int(math.Ceil(float64(len(users))/float64(countOfString)))-1 < numberOfPage+1 {
+		canNext = false
+	}
+
+	values = values[numberOfPage*countOfString : numberOfPage*countOfString+countOfString]
 	for _, value := range values {
 		values2 = append(values2, value)
 	}
-	values2 = append(values2, l)
+  
+	values2 = append(values2, canNext)
 	message, _ := json.Marshal(values2)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(message)
+}
 
+//Upload ..
+func Upload(avatars map[string]string, w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+		return
+	}
+
+	file, handle, err := r.FormFile("image")
+	fmt.Printf(handle.Filename)
+	if err != nil {
+		fmt.Fprintf(w, "%v", err)
+		return
+	}
+	defer file.Close()
+
+	r.ParseMultipartForm(0)
+	email := r.FormValue("email")
+	fmt.Println(email)
+
+	saveFile(w, file, email, handle, avatars)
+
+	// mimeType := handle.Header.Get("Content-Type")
+	// switch mimeType {
+	// case "image/jpeg", "image/png":
+	// 	// saveFile(w, file, handle)
+	// 	saveFile(w, file, email, handle, avatars)
+	// default:
+	// 	jsonResponse(w, http.StatusBadRequest, "The format file is not valid.")
+	// }
+}
+
+func saveFile(w http.ResponseWriter, file multipart.File, email string, handle *multipart.FileHeader, avatars map[string]string) {
+	data, err := ioutil.ReadAll(file)
+	if err != nil {
+		fmt.Fprintf(w, "%v", err)
+		return
+	}
+
+	// src := "./uploads/" + handle.Filename
+	// TODO: сделать через path
+	src := "/home/alexandr/go/src/back/2018_2_YetAnotherGame/uploads/" + email + handle.Filename
+	err = ioutil.WriteFile(src, data, 0666)
+	if err != nil {
+		fmt.Fprintf(w, "%v", err)
+		return
+	}
+	avatars[email] = src
+	// fmt.Println(avatars[email])
+
+	jsonResponse(w, http.StatusCreated, "File uploaded successfully!.")
+}
+
+func jsonResponse(w http.ResponseWriter, code int, message string) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(code)
+	fmt.Fprint(w, message)
 }
