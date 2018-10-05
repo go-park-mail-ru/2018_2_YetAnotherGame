@@ -173,7 +173,7 @@ func Leaders(users map[string]*models.User, w http.ResponseWriter, r *http.Reque
 	sort.Slice(values, func(i, j int) bool {
 		return values[i].Score > values[j].Score
 	})
-
+	// проверяем можно ли дальше листать
 	if int(math.Ceil(float64(len(users))/float64(countOfString)))-1 < numberOfPage+1 {
 		canNext = false
 	}
