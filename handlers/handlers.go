@@ -18,11 +18,12 @@ import (
 
 //SignUp ..
 func SignUp(ids map[string]string, users map[string]*models.User, w http.ResponseWriter, r *http.Request) {
+
 	user := models.User{}
 	json.NewDecoder(r.Body).Decode(&user)
 	if _, ok := ids[user.Email]; ok {
-		w.WriteHeader(http.StatusBadRequest)
 		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
 		message, _ := json.Marshal("already exists")
 		w.Write(message)
 	}
@@ -38,8 +39,11 @@ func SignUp(ids map[string]string, users map[string]*models.User, w http.Respons
 		Name:    "sessionid",
 		Value:   stringID,
 		Expires: time.Now().Add(60 * time.Minute),
+
+		Path:    "/",
 	}
 	http.SetCookie(w, cookie)
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 
 	message, _ := json.Marshal(stringID)
@@ -52,9 +56,9 @@ func Login(ids map[string]string, users map[string]*models.User, w http.Response
 	json.NewDecoder(r.Body).Decode(&cred)
 	user_id := ids[cred.Email]
 	if cred.Password == "" || cred.Email == "" {
-
-		w.WriteHeader(http.StatusBadRequest)
 		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+
 		message, _ := json.Marshal("Не указан E-Mail или пароль")
 		w.Write(message)
 	}
@@ -66,9 +70,9 @@ func Login(ids map[string]string, users map[string]*models.User, w http.Response
 		w.Write(message)
 	}
 	if users[user_id].Password != cred.Password {
-
-		w.WriteHeader(http.StatusBadRequest)
 		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+
 		message, _ := json.Marshal("Неверный пароль")
 		w.Write(message)
 	}
@@ -78,6 +82,7 @@ func Login(ids map[string]string, users map[string]*models.User, w http.Response
 		Name:    "sessionid",
 		Value:   user_id,
 		Expires: time.Now().Add(60 * time.Minute),
+		Path:    "/",
 	}
 	http.SetCookie(w, cookie)
 	w.WriteHeader(http.StatusCreated)
@@ -110,6 +115,8 @@ func Me(users map[string]*models.User, avatars map[string]string, w http.Respons
 
 	w.WriteHeader(http.StatusCreated)
 	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+
 	message, _ := json.Marshal(users[id2])
 	// message, _ := json.Marshal(body)
 	w.Write(message)
@@ -126,8 +133,9 @@ func Update(users map[string]*models.User, w http.ResponseWriter, r *http.Reques
 	//fmt.Println(r.MatchString("peach"))
 
 	if _, ok := users[user_id]; !ok {
-		w.WriteHeader(http.StatusBadRequest)
+
 		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
 		message, _ := json.Marshal("no users")
 		w.Write(message)
 	}
@@ -159,9 +167,10 @@ func Leaders(users map[string]*models.User, w http.ResponseWriter, r *http.Reque
 	numberOfPage := 0
 	countOfString := 3
 	canNext := true
-
+  
 	if r.URL.Query()["numPage"] != nil {
 		numberOfPage, _ = strconv.Atoi(r.URL.Query()["numPage"][0])
+
 	}
 
 	values2 := []interface{}{}
@@ -170,9 +179,11 @@ func Leaders(users map[string]*models.User, w http.ResponseWriter, r *http.Reque
 	for _, value := range users {
 		values = append(values, value)
 	}
+  
 	sort.Slice(values, func(i, j int) bool {
 		return values[i].Score > values[j].Score
 	})
+  
 	// проверяем можно ли дальше листать
 	if int(math.Ceil(float64(len(users))/float64(countOfString)))-1 < numberOfPage+1 {
 		canNext = false
@@ -182,6 +193,7 @@ func Leaders(users map[string]*models.User, w http.ResponseWriter, r *http.Reque
 	for _, value := range values {
 		values2 = append(values2, value)
 	}
+  
 	values2 = append(values2, canNext)
 	message, _ := json.Marshal(values2)
 

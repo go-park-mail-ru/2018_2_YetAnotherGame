@@ -36,6 +36,7 @@ func main() {
 		AllowCredentials: true,
 		AllowedOrigins:   []string{"http://127.0.0.1:3000"},                           // All origins
 		AllowedMethods:   []string{"GET", "HEAD", "POST", "PUT", "OPTIONS", "DELETE"}, // Allowing only get, just an example
+
 	})
 
 	//mux := http.NewServeMux()
