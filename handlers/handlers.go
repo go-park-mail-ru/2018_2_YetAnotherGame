@@ -64,8 +64,8 @@ func Login(ids map[string]string, users map[string]*models.User, w http.Response
 		message, _ := json.Marshal("Неверный E-Mail")
 		w.Write(message)
 	}
-	if users[user_id].Password != cred.Password {
 
+	if users[user_id].Password != cred.Password {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Header().Set("Content-Type", "application/json")
 		message, _ := json.Marshal("Неверный пароль")
@@ -83,12 +83,14 @@ func Login(ids map[string]string, users map[string]*models.User, w http.Response
 
 	message, _ := json.Marshal(user_id)
 	w.Write(message)
-
 }
 
-func Me(users map[string]*models.User, avatars map[string]string, w http.ResponseWriter, r *http.Request) {
-
-	id, _ := r.Cookie("sessionid")
+func Me(users map[string]*models.User, w http.ResponseWriter, r *http.Request) {
+	id, err := r.Cookie("sessionid")
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 	id2 := id.Value
 
 	if _, ok := users[id2]; !ok {
@@ -97,31 +99,17 @@ func Me(users map[string]*models.User, avatars map[string]string, w http.Respons
 
 	users[id2].Score += 1
 
-	// TODO: отправить пользователя и src аватара
-	
-	// body := []interface{}{}
-	// body = append(body, users[id2])
-	// body := map[string]string{}
-	// if src, ok := avatars[users[id2].Email]; ok {
-	// 	body["image"] = src
-	}
-	// src := avatars[users[id2].Email]
-
 	w.WriteHeader(http.StatusCreated)
 	w.Header().Set("Content-Type", "application/json")
 	message, _ := json.Marshal(users[id2])
-	// message, _ := json.Marshal(body)
 	w.Write(message)
 }
 
 func Update(users map[string]*models.User, w http.ResponseWriter, r *http.Request) {
-
 	tmp := models.User{}
 	json.NewDecoder(r.Body).Decode(&tmp)
 	id, _ := r.Cookie("sessionid")
-	id2 := id.Value
-	user_id := id2
-	//fmt.Println(r.MatchString("peach"))
+	user_id := id.Value
 
 	if _, ok := users[user_id]; !ok {
 		w.WriteHeader(http.StatusBadRequest)
@@ -129,11 +117,11 @@ func Update(users map[string]*models.User, w http.ResponseWriter, r *http.Reques
 		message, _ := json.Marshal("no users")
 		w.Write(message)
 	}
+
 	users[user_id].Email = tmp.Email
 	users[user_id].First_name = tmp.First_name
 	users[user_id].Last_name = tmp.Last_name
 	users[user_id].Username = tmp.Username
-
 }
 
 func Logout(w http.ResponseWriter, r *http.Request) {
@@ -152,7 +140,6 @@ func Logout(w http.ResponseWriter, r *http.Request) {
 }
 
 func Leaders(users map[string]*models.User, w http.ResponseWriter, r *http.Request) {
-
 	limit := 6
 	offset := 0
 
@@ -189,53 +176,45 @@ func Leaders(users map[string]*models.User, w http.ResponseWriter, r *http.Reque
 
 }
 
-func Upload(avatars map[string]string, w http.ResponseWriter, r *http.Request) {
+func Upload(users map[string]*models.User, w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
 
 	file, handle, err := r.FormFile("image")
-	fmt.Printf(handle.Filename)
 	if err != nil {
 		fmt.Fprintf(w, "%v", err)
 		return
 	}
 	defer file.Close()
 
-	r.ParseMultipartForm(0)
-	email := r.FormValue("email")
-	fmt.Println(email)
+	id, err := r.Cookie("sessionid")
+	if err != nil {
+		fmt.Fprintf(w, "%v", err)
+		return
+	}
+	user_id := id.Value
 
-	saveFile(w, file, email, handle, avatars)
-
-	// mimeType := handle.Header.Get("Content-Type")
-	// switch mimeType {
-	// case "image/jpeg", "image/png":
-	// 	// saveFile(w, file, handle)
-	// 	saveFile(w, file, email, handle, avatars)
-	// default:
-	// 	jsonResponse(w, http.StatusBadRequest, "The format file is not valid.")
-	// }
+	saveFile(users, w, file, user_id, handle)
 }
 
-func saveFile(w http.ResponseWriter, file multipart.File, email string, handle *multipart.FileHeader, avatars map[string]string) {
+func saveFile(users map[string]*models.User, w http.ResponseWriter, file multipart.File, user_id string, handle *multipart.FileHeader) {
 	data, err := ioutil.ReadAll(file)
 	if err != nil {
 		fmt.Fprintf(w, "%v", err)
 		return
 	}
 
-	// src := "./uploads/" + handle.Filename
 	// TODO: сделать через path
-	src := "/home/alexandr/go/src/back/2018_2_YetAnotherGame/uploads/" + email + handle.Filename
+	src := "/home/alexandr/go/src/back/2018_2_YetAnotherGame/uploads/" + users[user_id].Email + ".jpeg" // handle.Filename
+	fmt.Println(src)
 	err = ioutil.WriteFile(src, data, 0666)
 	if err != nil {
 		fmt.Fprintf(w, "%v", err)
 		return
 	}
-	avatars[email] = src
-	// fmt.Println(avatars[email])
+	users[user_id].Avatar = src
 
 	jsonResponse(w, http.StatusCreated, "File uploaded successfully!.")
 }
