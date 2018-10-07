@@ -13,3 +13,12 @@ type Auth struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }
+
+type Error struct{
+	Msg string `json:"Msg"`
+}
+
+type Leaders struct {
+Users []*User
+CanNext bool `json:"CanNext"`
+}

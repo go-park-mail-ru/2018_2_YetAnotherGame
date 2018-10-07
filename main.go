@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 
-	"goback/handlers"
-	"goback/models"
+	"2018_2_YetAnotherGame/handlers"
+	"2018_2_YetAnotherGame/models"
 
 	"github.com/gorilla/mux"
 	//"log"
@@ -42,30 +42,30 @@ func main() {
 	//mux := http.NewServeMux()
 	router := mux.NewRouter()
 
-	router.HandleFunc("/user", func(output http.ResponseWriter, request *http.Request) {
+	router.HandleFunc("/api/user", func(output http.ResponseWriter, request *http.Request) {
 		handlers.Leaders(users, output, request)
 	}).Methods("GET")
 
-	router.HandleFunc("/session/new", func(output http.ResponseWriter, request *http.Request) {
+	router.HandleFunc("/api/session/new", func(output http.ResponseWriter, request *http.Request) {
 		handlers.SignUp(ids, users, output, request)
 	}).Methods("POST")
 
-	router.HandleFunc("/session", func(output http.ResponseWriter, request *http.Request) {
+	router.HandleFunc("/api/session", func(output http.ResponseWriter, request *http.Request) {
 		handlers.Login(ids, users, output, request)
 	}).Methods("POST")
 
-	router.HandleFunc("/user/me", func(output http.ResponseWriter, request *http.Request) {
+	router.HandleFunc("/api/user/me", func(output http.ResponseWriter, request *http.Request) {
 		handlers.Me(users, avatars, output, request)
 	}).Methods("GET")
 
-	router.HandleFunc("/session", handlers.Logout).Methods("DELETE")
+	router.HandleFunc("/api/session", handlers.Logout).Methods("DELETE")
 
-	router.HandleFunc("/user/me", func(output http.ResponseWriter, request *http.Request) {
+	router.HandleFunc("/api/user/me", func(output http.ResponseWriter, request *http.Request) {
 		handlers.Update(users, output, request)
 	}).Methods("POST")
 
 	// TODO: изменить по ресту
-	router.HandleFunc("/upload", func(output http.ResponseWriter, request *http.Request) {
+	router.HandleFunc("/api/upload", func(output http.ResponseWriter, request *http.Request) {
 		handlers.Upload(avatars, output, request)
 	})
 

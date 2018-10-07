@@ -13,7 +13,7 @@ import (
 	"strings"
 	"time"
 
-	"goback/models"
+	"2018_2_YetAnotherGame/models"
 )
 
 //SignUp ..
@@ -24,7 +24,8 @@ func SignUp(ids map[string]string, users map[string]*models.User, w http.Respons
 	if _, ok := ids[user.Email]; ok {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
-		message, _ := json.Marshal("already exists")
+		msg:=models.Error{Msg:"already exists"}
+		message, _ := json.Marshal(msg)
 		w.Write(message)
 	}
 
@@ -58,8 +59,8 @@ func Login(ids map[string]string, users map[string]*models.User, w http.Response
 	if cred.Password == "" || cred.Email == "" {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
-
-		message, _ := json.Marshal("Не указан E-Mail или пароль")
+		msg:=models.Error{Msg:"Не указан E-Mail или пароль"}
+		message, _ := json.Marshal(msg)
 		w.Write(message)
 	}
 
@@ -72,8 +73,9 @@ func Login(ids map[string]string, users map[string]*models.User, w http.Response
 	if users[user_id].Password != cred.Password {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
+		msg:=models.Error{Msg:"Неверный пароль"}
+		message, _ := json.Marshal(msg)
 
-		message, _ := json.Marshal("Неверный пароль")
 		w.Write(message)
 	}
 
@@ -136,7 +138,8 @@ func Update(users map[string]*models.User, w http.ResponseWriter, r *http.Reques
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
-		message, _ := json.Marshal("no users")
+		msg:=models.Error{Msg:"Нет пользователей"}
+		message, _ := json.Marshal(msg)
 		w.Write(message)
 	}
 	users[user_id].Email = tmp.Email
@@ -173,7 +176,7 @@ func Leaders(users map[string]*models.User, w http.ResponseWriter, r *http.Reque
 
 	}
 
-	values2 := []interface{}{}
+	//values2 := []interface{}{}
 	values := make([]*models.User, 0, len(users))
 
 	for _, value := range users {
@@ -190,12 +193,15 @@ func Leaders(users map[string]*models.User, w http.ResponseWriter, r *http.Reque
 	}
 
 	values = values[numberOfPage*countOfString : numberOfPage*countOfString+countOfString]
-	for _, value := range values {
-		values2 = append(values2, value)
-	}
-  
-	values2 = append(values2, canNext)
-	message, _ := json.Marshal(values2)
+	//for _, value := range values {
+	//	values2 = append(values2, value)
+	//}
+	//
+	//values2 = append(values2, canNext)
+	b:=models.Leaders{}
+	b.Users=values
+	b.CanNext=canNext
+	message, _ := json.Marshal(b)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(message)
