@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 
-	"2018_2_YetAnotherGame/handlers"
-	"2018_2_YetAnotherGame/models"
+	"./handlers"
+	"./models"
 
 	"github.com/gorilla/mux"
 	//"log"
@@ -16,15 +16,15 @@ import (
 func main() {
 	ids := make(map[string]string, 0)
 	users := make(map[string]*models.User, 0)
-	avatars := make(map[string]string, 0)
+
 	//user:=new(user){"a@a","f1","l1","u1","qwerty",5}
 
-	q1 := models.User{"af@a", "f1", "l1", "u1", "qwerty", 5}
-	q2 := models.User{"asf@a", "f1", "l1", "u1", "qwerty", 6}
-	q3 := models.User{"asfg@a", "f1", "l1", "u1", "qwerty", 54}
-	q4 := models.User{"asdg@a", "f1", "l1", "u1", "qwerty", 7}
-	q5 := models.User{"asdg@a", "f1", "l1", "u1", "qwerty", 6}
-	q6 := models.User{"asdg@a", "f1", "l1", "u1", "qwerty", 9}
+	q1 := models.User{"af@a", "f1", "l1", "u1", "qwerty", 5, ""}
+	q2 := models.User{"asf@a", "f1", "l1", "u1", "qwerty", 6, ""}
+	q3 := models.User{"asfg@a", "f1", "l1", "u1", "qwerty", 54, ""}
+	q4 := models.User{"asdg@a", "f1", "l1", "u1", "qwerty", 7, ""}
+	q5 := models.User{"asdg@a", "f1", "l1", "u1", "qwerty", 6, ""}
+	q6 := models.User{"asdg@a", "f1", "l1", "u1", "qwerty", 9, ""}
 	users["1"] = &q1
 	users["2"] = &q2
 	users["3"] = &q3
@@ -55,7 +55,7 @@ func main() {
 	}).Methods("POST")
 
 	router.HandleFunc("/api/user/me", func(output http.ResponseWriter, request *http.Request) {
-		handlers.Me(users, avatars, output, request)
+		handlers.Me(users, output, request)
 	}).Methods("GET")
 
 	router.HandleFunc("/api/session", handlers.Logout).Methods("DELETE")
@@ -64,10 +64,9 @@ func main() {
 		handlers.Update(users, output, request)
 	}).Methods("POST")
 
-	// TODO: изменить по ресту
 	router.HandleFunc("/api/upload", func(output http.ResponseWriter, request *http.Request) {
-		handlers.Upload(avatars, output, request)
-	})
+		handlers.Upload(users, output, request)
+	}).Methods("POST")
 
 	http.Handle("/", router)
 

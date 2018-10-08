@@ -7,6 +7,7 @@ type User struct {
 	Username   string `json:"username"`
 	Password   string `json:"password"`
 	Score      int    `json:"score"`
+	Avatar     string `json:"avatar"`
 }
 
 type Auth struct {
@@ -14,11 +15,11 @@ type Auth struct {
 	Password string `json:"password"`
 }
 
-type Error struct{
+type Error struct {
 	Msg string `json:"Msg"`
 }
 
 type Leaders struct {
-Users []*User
-CanNext bool `json:"CanNext"`
+	Users   []*User
+	CanNext bool `json:"CanNext"`
 }
