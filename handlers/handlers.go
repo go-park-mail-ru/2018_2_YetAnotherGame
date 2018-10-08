@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"mime/multipart"
 	"net/http"
+	"os"
 	"os/exec"
 	"sort"
 	"strconv"
@@ -95,6 +96,7 @@ func Me(users map[string]*models.User, w http.ResponseWriter, r *http.Request) {
 
 	if _, ok := users[id2]; !ok {
 		w.WriteHeader(http.StatusBadRequest)
+		return
 	}
 
 	users[id2].Score += 1
@@ -206,9 +208,15 @@ func saveFile(users map[string]*models.User, w http.ResponseWriter, file multipa
 		return
 	}
 
-	// TODO: сделать через path
-	src := "/home/alexandr/go/src/back/2018_2_YetAnotherGame/uploads/" + users[user_id].Email + ".jpeg" // handle.Filename
-	fmt.Println(src)
+	pwd, err := os.Getwd()
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	// fmt.Println(pwd)
+	// src := pwd + "/uploads/" + users[user_id].Email + ".jpeg"
+	src := pwd + "/uploads/" + users[user_id].Email + handle.Filename
+
 	err = ioutil.WriteFile(src, data, 0666)
 	if err != nil {
 		fmt.Fprintf(w, "%v", err)
