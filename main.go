@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 
-	"./handlers"
-	"./models"
+	"2018_2_YetAnotherGame/handlers"
+	"2018_2_YetAnotherGame/models"
 
 	"github.com/gorilla/mux"
 	//"log"
@@ -15,7 +15,9 @@ import (
 
 func main() {
 	ids := make(map[string]string, 0)
-	users := make(map[string]*models.User, 0)
+	//users := make(map[string]*models.User, 0)
+	users:=models.UsersMap{}
+	users.Const()
 
 	//user:=new(user){"a@a","f1","l1","u1","qwerty",5}
 
@@ -25,12 +27,12 @@ func main() {
 	q4 := models.User{"asdg@a", "f1", "l1", "u1", "qwerty", 7, ""}
 	q5 := models.User{"asdg@a", "f1", "l1", "u1", "qwerty", 6, ""}
 	q6 := models.User{"asdg@a", "f1", "l1", "u1", "qwerty", 9, ""}
-	users["1"] = &q1
-	users["2"] = &q2
-	users["3"] = &q3
-	users["4"] = &q4
-	users["5"] = &q5
-	users["6"] = &q6
+	users.Store("1",&q1)
+	users.Store("2",&q2)
+	users.Store("3",&q3)
+	users.Store("4",&q4)
+	users.Store("5",&q5)
+	users.Store("6",&q6)
 
 	c := cors.New(cors.Options{
 		AllowCredentials: true,

@@ -14,11 +14,11 @@ import (
 	"strings"
 	"time"
 
-	"../models"
+	"2018_2_YetAnotherGame/models"
 )
 
 //SignUp ..
-func SignUp(ids map[string]string, users map[string]*models.User, w http.ResponseWriter, r *http.Request) {
+func SignUp(ids map[string]string, users models.UsersMap, w http.ResponseWriter, r *http.Request) {
 	user := models.User{}
 	json.NewDecoder(r.Body).Decode(&user)
 	if _, ok := ids[user.Email]; ok {
@@ -33,7 +33,8 @@ func SignUp(ids map[string]string, users map[string]*models.User, w http.Respons
 
 	stringID := string(id[:])
 	stringID = strings.Trim(stringID, "\n")
-	users[stringID] = &user
+	//users[stringID] = &user
+	users.Store(stringID, &user)
 	ids[user.Email] = stringID
 
 	cookie := &http.Cookie{
@@ -52,7 +53,7 @@ func SignUp(ids map[string]string, users map[string]*models.User, w http.Respons
 }
 
 //Login ..
-func Login(ids map[string]string, users map[string]*models.User, w http.ResponseWriter, r *http.Request) {
+func Login(ids map[string]string, users models.UsersMap, w http.ResponseWriter, r *http.Request) {
 	cred := models.Auth{}
 	json.NewDecoder(r.Body).Decode(&cred)
 	user_id := ids[cred.Email]
@@ -64,13 +65,14 @@ func Login(ids map[string]string, users map[string]*models.User, w http.Response
 		w.Write(message)
 	}
 
-	if _, ok := users[user_id]; !ok {
+	if _, ok := users.Load(user_id); !ok {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Header().Set("Content-Type", "application/json")
 		message, _ := json.Marshal("Неверный E-Mail")
 		w.Write(message)
 	}
-	if users[user_id].Password != cred.Password {
+	tmp, _:=users.Load(user_id)
+	if tmp.Password != cred.Password {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 		msg := models.Error{Msg: "Неверный пароль"}
@@ -95,7 +97,7 @@ func Login(ids map[string]string, users map[string]*models.User, w http.Response
 }
 
 //Me ..
-func Me(users map[string]*models.User, w http.ResponseWriter, r *http.Request) {
+func Me(users models.UsersMap, w http.ResponseWriter, r *http.Request) {
 	id, err := r.Cookie("sessionid")
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -103,21 +105,21 @@ func Me(users map[string]*models.User, w http.ResponseWriter, r *http.Request) {
 	}
 	id2 := id.Value
 
-	if _, ok := users[id2]; !ok {
+	if _, ok := users.Load(id2); !ok {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-
-	users[id2].Score++
+tmp,_:=users.Load(id2)
+	tmp.Score++
 
 	w.WriteHeader(http.StatusCreated)
 	w.Header().Set("Content-Type", "application/json")
-	message, _ := json.Marshal(users[id2])
+	message, _ := json.Marshal(tmp)
 	w.Write(message)
 }
 
 //Update ..
-func Update(users map[string]*models.User, w http.ResponseWriter, r *http.Request) {
+func Update(users models.UsersMap, w http.ResponseWriter, r *http.Request) {
 	tmp := models.User{}
 	json.NewDecoder(r.Body).Decode(&tmp)
 	id, _ := r.Cookie("sessionid")
@@ -125,7 +127,7 @@ func Update(users map[string]*models.User, w http.ResponseWriter, r *http.Reques
 	user_id := id2
 	//fmt.Println(r.MatchString("peach"))
 
-	if _, ok := users[user_id]; !ok {
+	if _, ok := users.Load(user_id); !ok {
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
@@ -133,10 +135,12 @@ func Update(users map[string]*models.User, w http.ResponseWriter, r *http.Reques
 		message, _ := json.Marshal(msg)
 		w.Write(message)
 	}
-	users[user_id].Email = tmp.Email
-	users[user_id].First_name = tmp.First_name
-	users[user_id].Last_name = tmp.Last_name
-	users[user_id].Username = tmp.Username
+	tmpuser,_:=users.Load(user_id)
+	tmpuser.Email = tmp.Email
+	tmpuser.First_name = tmp.First_name
+	tmpuser.Last_name = tmp.Last_name
+	tmpuser.Username = tmp.Username
+	users.Store(user_id, tmpuser)
 }
 
 //Logout ..
@@ -156,7 +160,7 @@ func Logout(w http.ResponseWriter, r *http.Request) {
 }
 
 //Leaders ..
-func Leaders(users map[string]*models.User, w http.ResponseWriter, r *http.Request) {
+func Leaders(users models.UsersMap, w http.ResponseWriter, r *http.Request) {
 	numberOfPage := 0
 	countOfString := 3
 	canNext := true
@@ -167,9 +171,9 @@ func Leaders(users map[string]*models.User, w http.ResponseWriter, r *http.Reque
 	}
 
 	//values2 := []interface{}{}
-	values := make([]*models.User, 0, len(users))
+	values := make([]*models.User, 0, users.Size)
 
-	for _, value := range users {
+	for _, value := range users.M {
 		values = append(values, value)
 	}
 
@@ -178,7 +182,7 @@ func Leaders(users map[string]*models.User, w http.ResponseWriter, r *http.Reque
 	})
 
 	// проверяем можно ли дальше листать
-	if int(math.Ceil(float64(len(users))/float64(countOfString)))-1 < numberOfPage+1 {
+	if int(math.Ceil(float64(users.Size)/float64(countOfString)))-1 < numberOfPage+1 {
 		canNext = false
 	}
 
@@ -198,7 +202,7 @@ func Leaders(users map[string]*models.User, w http.ResponseWriter, r *http.Reque
 }
 
 //Upload ..
-func Upload(users map[string]*models.User, w http.ResponseWriter, r *http.Request) {
+func Upload(users models.UsersMap, w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
@@ -221,7 +225,7 @@ func Upload(users map[string]*models.User, w http.ResponseWriter, r *http.Reques
 	saveFile(users, w, file, user_id, handle)
 }
 
-func saveFile(users map[string]*models.User, w http.ResponseWriter, file multipart.File, user_id string, handle *multipart.FileHeader) {
+func saveFile(users models.UsersMap, w http.ResponseWriter, file multipart.File, user_id string, handle *multipart.FileHeader) {
 	data, err := ioutil.ReadAll(file)
 	if err != nil {
 		fmt.Fprintf(w, "%v", err)
@@ -233,16 +237,19 @@ func saveFile(users map[string]*models.User, w http.ResponseWriter, file multipa
 		fmt.Println(err)
 		os.Exit(1)
 	}
+
 	// fmt.Println(pwd)
 	// src := pwd + "/uploads/" + users[user_id].Email + ".jpeg"
-	src := pwd + "/uploads/" + users[user_id].Email + handle.Filename
+	tmpuser,_:=users.Load(user_id)
+	src := pwd + "/uploads/" + tmpuser.Email + handle.Filename
 
 	err = ioutil.WriteFile(src, data, 0666)
 	if err != nil {
 		fmt.Fprintf(w, "%v", err)
 		return
 	}
-	users[user_id].Avatar = src
+	tmpuser.Avatar = src
+	users.Store(user_id, tmpuser)
 
 	jsonResponse(w, http.StatusCreated, "File uploaded successfully!.")
 }
