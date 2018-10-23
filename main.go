@@ -3,6 +3,10 @@ package main
 import (
 	"fmt"
 	"github.com/jinzhu/gorm"
+	"github.com/rs/cors"
+	"log"
+	"os"
+	"time"
 
 	"2018_2_YetAnotherGame/handlers"
 	"2018_2_YetAnotherGame/models"
@@ -11,12 +15,38 @@ import (
 	//"log"
 	"net/http"
 
-	"github.com/rs/cors"
-
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 )
 
+type AccessLogger struct {
+	StdLogger    *log.Logger
+
+}
+func (ac *AccessLogger) accessLogMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		start := time.Now()
+		next.ServeHTTP(w, r)
+
+		fmt.Printf("FMT [%s] %s, %s %s\n",
+			r.Method, r.RemoteAddr, r.URL.Path, time.Since(start))
+
+		log.Printf("LOG [%s] %s, %s %s\n",
+			r.Method, r.RemoteAddr, r.URL.Path, time.Since(start))
+
+		ac.StdLogger.Printf("[%s] %s, %s %s\n",
+			r.Method, r.RemoteAddr, r.URL.Path, time.Since(start))
+
+
+		})
+	}
+
+
+
 func main() {
+	AccessLogOut := new(AccessLogger)
+
+	// std
+	AccessLogOut.StdLogger = log.New(os.Stdout, "STD ", log.LUTC|log.Lshortfile)
 
 	db, err := gorm.Open("postgres", "host=127.0.0.1 port=5432 user=test_user dbname=backend password=1")
 	fmt.Println(err)
@@ -51,6 +81,7 @@ func main() {
 
 	})
 
+
 	//mux := http.NewServeMux()
 	router := mux.NewRouter()
 
@@ -84,6 +115,7 @@ func main() {
 
 	fmt.Println("Server listening port 8000")
 	//log.Fatal(http.ListenAndServe(":8000", c.Handler(router)))
-	handler := c.Handler(router)
+	siteHandler := AccessLogOut.accessLogMiddleware(router)
+	handler := c.Handler(siteHandler)
 	http.ListenAndServe(":8000", handler)
 }
