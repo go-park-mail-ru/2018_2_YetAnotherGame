@@ -3,6 +3,7 @@ package models
 import "sync"
 
 type User struct {
+	ID        string `gorm:"primary_key"`
 	Email      string `json:"email"`
 	First_name string `json:"first_name"`
 	Last_name  string `json:"last_name"`

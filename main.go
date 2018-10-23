@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/jinzhu/gorm"
 
 	"2018_2_YetAnotherGame/handlers"
 	"2018_2_YetAnotherGame/models"
@@ -11,28 +12,37 @@ import (
 	"net/http"
 
 	"github.com/rs/cors"
+
+	_ "github.com/jinzhu/gorm/dialects/postgres"
 )
 
 func main() {
+
+	db, err := gorm.Open("postgres", "host=127.0.0.1 port=5432 user=test_user dbname=backend password=1")
+	fmt.Println(err)
+	defer db.Close()
+	//env:=&database.Env{db}
 	ids := make(map[string]string, 0)
 	//users := make(map[string]*models.User, 0)
 	users:=models.UsersMap{}
 	users.Const()
 
 	//user:=new(user){"a@a","f1","l1","u1","qwerty",5}
+	db.AutoMigrate(&models.User{})
+	db.AutoMigrate(&models.Session{})
+	q1 := models.User{"1","af@a", "f1", "l1", "u1", "qwerty", 5, ""}
+	q2 := models.User{"2","asf@a", "f1", "l1", "u1", "qwerty", 6, ""}
+	q3 := models.User{"3","asfg@a", "f1", "l1", "u1", "qwerty", 54, ""}
+	q4 := models.User{"4","asdg@a", "f1", "l1", "u1", "qwerty", 7, ""}
+	q5 := models.User{"5","asdg@a", "f1", "l1", "u1", "qwerty", 6, ""}
+	q6 := models.User{"6","asdg@a", "f1", "l1", "u1", "qwerty", 9, ""}
+	db.Create(&q1)
+	db.Create(&q2)
+	db.Create(&q3)
+	db.Create(&q4)
+	db.Create(&q5)
+	db.Create(&q6)
 
-	q1 := models.User{"af@a", "f1", "l1", "u1", "qwerty", 5, ""}
-	q2 := models.User{"asf@a", "f1", "l1", "u1", "qwerty", 6, ""}
-	q3 := models.User{"asfg@a", "f1", "l1", "u1", "qwerty", 54, ""}
-	q4 := models.User{"asdg@a", "f1", "l1", "u1", "qwerty", 7, ""}
-	q5 := models.User{"asdg@a", "f1", "l1", "u1", "qwerty", 6, ""}
-	q6 := models.User{"asdg@a", "f1", "l1", "u1", "qwerty", 9, ""}
-	users.Store("1",&q1)
-	users.Store("2",&q2)
-	users.Store("3",&q3)
-	users.Store("4",&q4)
-	users.Store("5",&q5)
-	users.Store("6",&q6)
 
 	c := cors.New(cors.Options{
 		AllowCredentials: true,
@@ -45,29 +55,29 @@ func main() {
 	router := mux.NewRouter()
 
 	router.HandleFunc("/api/user", func(output http.ResponseWriter, request *http.Request) {
-		handlers.Leaders(users, output, request)
+		handlers.Leaders(db, output, request)
 	}).Methods("GET")
 
 	router.HandleFunc("/api/session/new", func(output http.ResponseWriter, request *http.Request) {
-		handlers.SignUp(ids, users, output, request)
+		handlers.SignUp(db,ids, users, output, request)
 	}).Methods("POST")
 
 	router.HandleFunc("/api/session", func(output http.ResponseWriter, request *http.Request) {
-		handlers.Login(ids, users, output, request)
+		handlers.Login(db, output, request)
 	}).Methods("POST")
 
 	router.HandleFunc("/api/user/me", func(output http.ResponseWriter, request *http.Request) {
-		handlers.Me(users, output, request)
+		handlers.Me(db, output, request)
 	}).Methods("GET")
 
 	router.HandleFunc("/api/session", handlers.Logout).Methods("DELETE")
 
 	router.HandleFunc("/api/user/me", func(output http.ResponseWriter, request *http.Request) {
-		handlers.Update(users, output, request)
+		handlers.Update(db, output, request)
 	}).Methods("POST")
 
 	router.HandleFunc("/api/upload", func(output http.ResponseWriter, request *http.Request) {
-		handlers.Upload(users, output, request)
+		handlers.Upload(db, output, request)
 	}).Methods("POST")
 
 	http.Handle("/", router)

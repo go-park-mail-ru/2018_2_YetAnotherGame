@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/jinzhu/gorm"
 	"io/ioutil"
 	"math"
 	"mime/multipart"
@@ -18,15 +19,22 @@ import (
 )
 
 //SignUp ..
-func SignUp(ids map[string]string, users models.UsersMap, w http.ResponseWriter, r *http.Request) {
+func SignUp(db *gorm.DB,ids map[string]string, users models.UsersMap, w http.ResponseWriter, r *http.Request) {
 	user := models.User{}
 	json.NewDecoder(r.Body).Decode(&user)
-	if _, ok := ids[user.Email]; ok {
+	tmp:=models.Session{}
+	var user_id string
+	db.Table("sessions").Select("id, email").Where("email = ?", user.Email).Scan(&tmp)
+	user_id=tmp.ID
+
+	if user_id!=""{
+		fmt.Println("errrpr")
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 		msg := models.Error{Msg: "already exists"}
 		message, _ := json.Marshal(msg)
 		w.Write(message)
+		return
 	}
 
 	id, _ := exec.Command("uuidgen").Output()
@@ -34,8 +42,13 @@ func SignUp(ids map[string]string, users models.UsersMap, w http.ResponseWriter,
 	stringID := string(id[:])
 	stringID = strings.Trim(stringID, "\n")
 	//users[stringID] = &user
-	users.Store(stringID, &user)
-	ids[user.Email] = stringID
+	user.ID=stringID
+	tmp.ID=stringID
+	tmp.Email=user.Email
+	db.Create(&tmp)
+	//users.Store(stringID, &user)
+	db.Create(&user)
+	//ids[user.Email] = stringID
 
 	cookie := &http.Cookie{
 		Name:    "sessionid",
@@ -53,35 +66,43 @@ func SignUp(ids map[string]string, users models.UsersMap, w http.ResponseWriter,
 }
 
 //Login ..
-func Login(ids map[string]string, users models.UsersMap, w http.ResponseWriter, r *http.Request) {
+func Login(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 	cred := models.Auth{}
+	tmp:=models.Session{}
 	json.NewDecoder(r.Body).Decode(&cred)
-	user_id := ids[cred.Email]
+	var user_id string
+	db.Table("sessions").Select("id, email").Where("email = ?", cred.Email).Scan(&tmp)
+user_id=tmp.ID
 	if cred.Password == "" || cred.Email == "" {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 		msg := models.Error{Msg: "Не указан E-Mail или пароль"}
 		message, _ := json.Marshal(msg)
 		w.Write(message)
+		return
 	}
 
-	if _, ok := users.Load(user_id); !ok {
+	if user_id=="" {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Header().Set("Content-Type", "application/json")
 		message, _ := json.Marshal("Неверный E-Mail")
 		w.Write(message)
+		return
 	}
-	tmp, _:=users.Load(user_id)
-	if tmp.Password != cred.Password {
+	var tmp2 models.User
+	db.Where("id = ?", user_id).First(&tmp2)
+
+	if tmp2.Password != cred.Password {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 		msg := models.Error{Msg: "Неверный пароль"}
 		message, _ := json.Marshal(msg)
 
 		w.Write(message)
+		return
 	}
 
-	ids[cred.Email] = user_id
+
 	cookie := &http.Cookie{
 		Name:    "sessionid",
 		Value:   user_id,
@@ -97,37 +118,46 @@ func Login(ids map[string]string, users models.UsersMap, w http.ResponseWriter, 
 }
 
 //Me ..
-func Me(users models.UsersMap, w http.ResponseWriter, r *http.Request) {
+func Me(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 	id, err := r.Cookie("sessionid")
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	id2 := id.Value
-
-	if _, ok := users.Load(id2); !ok {
+	tmp := models.Session{}
+	db.Table("sessions").Select("id, email").Where("id = ?", id2).Scan(&tmp)
+	//
+	// db.Where("id = ?", id2).First(&tmp)
+	if tmp.ID=="" {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-tmp,_:=users.Load(id2)
-	tmp.Score++
+	res:=models.User{}
+	db.Where("id = ?", tmp.ID).First(&res)
+//tmp,_:=users.Load(id2)
+//	tmp.Score++
 
 	w.WriteHeader(http.StatusCreated)
 	w.Header().Set("Content-Type", "application/json")
-	message, _ := json.Marshal(tmp)
+	message, _ := json.Marshal(res)
 	w.Write(message)
 }
 
 //Update ..
-func Update(users models.UsersMap, w http.ResponseWriter, r *http.Request) {
+func Update(db *gorm.DB,  w http.ResponseWriter, r *http.Request) {
 	tmp := models.User{}
 	json.NewDecoder(r.Body).Decode(&tmp)
 	id, _ := r.Cookie("sessionid")
 	id2 := id.Value
 	user_id := id2
 	//fmt.Println(r.MatchString("peach"))
+	ses:=models.Session{}
 
-	if _, ok := users.Load(user_id); !ok {
+
+	db.Table("sessions").Select("id, email").Where("email = ?", user_id).Scan(&ses)
+
+	if ses.ID=="" {
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
@@ -135,12 +165,12 @@ func Update(users models.UsersMap, w http.ResponseWriter, r *http.Request) {
 		message, _ := json.Marshal(msg)
 		w.Write(message)
 	}
-	tmpuser,_:=users.Load(user_id)
-	tmpuser.Email = tmp.Email
-	tmpuser.First_name = tmp.First_name
-	tmpuser.Last_name = tmp.Last_name
-	tmpuser.Username = tmp.Username
-	users.Store(user_id, tmpuser)
+	tmpuser:=models.User{}
+	db.Table("users ").Select("id, email, first_name, last_name, username, password, score, avatar ").Where("id = ?", user_id).Scan(&tmpuser)
+
+	db.Model(&tmpuser).Updates(models.User{Email:tmp.Email,First_name:tmp.First_name, Last_name:tmp.Last_name,Username:tmp.Username}).Where("id = ?", user_id)
+	db.Save(&tmpuser)
+
 }
 
 //Logout ..
@@ -151,6 +181,8 @@ func Logout(w http.ResponseWriter, r *http.Request) {
 		Name:    "sessionid",
 		Value:   id2,
 		Expires: time.Now(),
+		Path: "/",
+
 	}
 	http.SetCookie(w, cookie)
 
@@ -160,7 +192,7 @@ func Logout(w http.ResponseWriter, r *http.Request) {
 }
 
 //Leaders ..
-func Leaders(users models.UsersMap, w http.ResponseWriter, r *http.Request) {
+func Leaders(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 	numberOfPage := 0
 	countOfString := 3
 	canNext := true
@@ -171,9 +203,27 @@ func Leaders(users models.UsersMap, w http.ResponseWriter, r *http.Request) {
 	}
 
 	//values2 := []interface{}{}
-	values := make([]*models.User, 0, users.Size)
+	users := make([]*models.User, 0)
+	query:="SELECT ID::text, email::text, first_name::text, last_name::text,username::text, score::integer FROM users;"
 
-	for _, value := range users.M {
+	rows,_ := db.Raw(query).Rows()
+
+
+
+
+	for rows.Next() {
+		user := new(models.User)
+		err := rows.Scan(&user.ID,&user.Email,&user.First_name,&user.Last_name, &user.Username,&user.Score)
+		if err != nil {		}
+
+		users = append(users, user)
+	}
+
+
+
+	values := make([]*models.User, 0)
+
+	for _, value := range users {
 		values = append(values, value)
 	}
 
@@ -182,7 +232,7 @@ func Leaders(users models.UsersMap, w http.ResponseWriter, r *http.Request) {
 	})
 
 	// проверяем можно ли дальше листать
-	if int(math.Ceil(float64(users.Size)/float64(countOfString)))-1 < numberOfPage+1 {
+	if int(math.Ceil(float64(len(values))/float64(countOfString)))-1 < numberOfPage+1 {
 		canNext = false
 	}
 
@@ -202,7 +252,7 @@ func Leaders(users models.UsersMap, w http.ResponseWriter, r *http.Request) {
 }
 
 //Upload ..
-func Upload(users models.UsersMap, w http.ResponseWriter, r *http.Request) {
+func Upload(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
@@ -222,10 +272,10 @@ func Upload(users models.UsersMap, w http.ResponseWriter, r *http.Request) {
 	}
 	user_id := id.Value
 
-	saveFile(users, w, file, user_id, handle)
+	saveFile(db, w, file, user_id, handle)
 }
 
-func saveFile(users models.UsersMap, w http.ResponseWriter, file multipart.File, user_id string, handle *multipart.FileHeader) {
+func saveFile(db *gorm.DB, w http.ResponseWriter, file multipart.File, user_id string, handle *multipart.FileHeader) {
 	data, err := ioutil.ReadAll(file)
 	if err != nil {
 		fmt.Fprintf(w, "%v", err)
@@ -240,7 +290,8 @@ func saveFile(users models.UsersMap, w http.ResponseWriter, file multipart.File,
 
 	// fmt.Println(pwd)
 	// src := pwd + "/uploads/" + users[user_id].Email + ".jpeg"
-	tmpuser,_:=users.Load(user_id)
+	tmpuser:=models.User{}
+//db.Table("users ").Select("id, email, first_name, last_name, username ").Where("id = ?", tmpuser).Scan(&tmpuser)
 	src := pwd + "/uploads/" + tmpuser.Email + handle.Filename
 
 	err = ioutil.WriteFile(src, data, 0666)
@@ -248,9 +299,10 @@ func saveFile(users models.UsersMap, w http.ResponseWriter, file multipart.File,
 		fmt.Fprintf(w, "%v", err)
 		return
 	}
-	tmpuser.Avatar = src
-	users.Store(user_id, tmpuser)
-
+	//tmpuser.Avatar = src
+	db.Table("users ").Select("id, email, first_name, last_name, username, password, score, avatar ").Where("id = ?", user_id).Scan(&tmpuser)
+	//users.Store(user_id, tmpuser)
+	db.Model(&tmpuser).Updates(models.User{Avatar:src}).Where("id = ?", user_id)
 	jsonResponse(w, http.StatusCreated, "File uploaded successfully!.")
 }
 
