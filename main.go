@@ -2,37 +2,101 @@ package main
 
 import (
 	"fmt"
+	"github.com/FogCreek/mini"
+	"github.com/jinzhu/gorm"
+	"github.com/rs/cors"
+	"github.com/sirupsen/logrus"
+	"os"
+	"os/user"
+	"time"
 
 	"2018_2_YetAnotherGame/handlers"
 	"2018_2_YetAnotherGame/models"
 
 	"github.com/gorilla/mux"
+	_ "github.com/jinzhu/gorm/dialects/postgres"
 	//"log"
 	"net/http"
-
-	"github.com/rs/cors"
 )
 
+type AccessLogger struct {
+	LogrusLogger *logrus.Entry
+
+}
+func (ac *AccessLogger) accessLogMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		start := time.Now()
+		next.ServeHTTP(w, r)
+
+		ac.LogrusLogger.WithFields(logrus.Fields{
+			"method":      r.Method,
+			"remote_addr": r.RemoteAddr,
+			"work_time":   time.Since(start),
+		}).Info(r.URL.Path)
+	})}
+
+func params() string {
+	u, err := user.Current()
+	if err!=nil{
+		fmt.Println(err)
+	}
+	pwd, _ := os.Getwd()
+	cfg, err := mini.LoadConfiguration(pwd+"/config/DfBsettings.txt")
+	if err!=nil{
+		logrus.Error(err)
+	}
+
+	info := fmt.Sprintf("host=%s port=%s dbname=%s "+
+		"sslmode=%s user=%s password=%s ",
+		cfg.String("host", "127.0.0.1"),
+		cfg.String("port", "5432"),
+		cfg.String("dbname", u.Username),
+		cfg.String("sslmode", "disable"),
+		cfg.String("user", u.Username),
+		cfg.String("pass", ""),
+	)
+	return info
+}
+
 func main() {
-	ids := make(map[string]string, 0)
-	//users := make(map[string]*models.User, 0)
-	users:=models.UsersMap{}
-	users.Const()
+	addr := "localhost"
+	port := 8000
+	// logrus
+	logrus.SetFormatter(&logrus.TextFormatter{DisableColors: true})
+	logrus.WithFields(logrus.Fields{
+		"logger": "LOGRUS",
+		"host":   addr,
+		"port":   port,
+	}).Info("Starting server")
+	AccessLogOut := new(AccessLogger)
 
-	//user:=new(user){"a@a","f1","l1","u1","qwerty",5}
 
-	q1 := models.User{"af@a", "f1", "l1", "u1", "qwerty", 5, ""}
-	q2 := models.User{"asf@a", "f1", "l1", "u1", "qwerty", 6, ""}
-	q3 := models.User{"asfg@a", "f1", "l1", "u1", "qwerty", 54, ""}
-	q4 := models.User{"asdg@a", "f1", "l1", "u1", "qwerty", 7, ""}
-	q5 := models.User{"asdg@a", "f1", "l1", "u1", "qwerty", 6, ""}
-	q6 := models.User{"asdg@a", "f1", "l1", "u1", "qwerty", 9, ""}
-	users.Store("1",&q1)
-	users.Store("2",&q2)
-	users.Store("3",&q3)
-	users.Store("4",&q4)
-	users.Store("5",&q5)
-	users.Store("6",&q6)
+
+	db, err := gorm.Open("postgres", params())
+	if err!=nil{
+		logrus.Error(err)
+	}
+	defer db.Close()
+
+
+
+
+	//test users to fill the db
+	db.AutoMigrate(&models.User{})
+	db.AutoMigrate(&models.Session{})
+	//q1 := models.User{"1","af@a", "f1", "l1", "u1", "qwerty", 5, ""}
+	//q2 := models.User{"2","asf@a", "f1", "l1", "u1", "qwerty", 6, ""}
+	//q3 := models.User{"3","asfg@a", "f1", "l1", "u1", "qwerty", 54, ""}
+	//q4 := models.User{"4","asdg@a", "f1", "l1", "u1", "qwerty", 7, ""}
+	//q5 := models.User{"5","asdg@a", "f1", "l1", "u1", "qwerty", 6, ""}
+	//q6 := models.User{"6","asdg@a", "f1", "l1", "u1", "qwerty", 9, ""}
+	//db.Create(&q1)
+	//db.Create(&q2)
+	//db.Create(&q3)
+	//db.Create(&q4)
+	//db.Create(&q5)
+	//db.Create(&q6)
+
 
 	c := cors.New(cors.Options{
 		AllowCredentials: true,
@@ -41,39 +105,47 @@ func main() {
 
 	})
 
+
 	//mux := http.NewServeMux()
 	router := mux.NewRouter()
 
 	router.HandleFunc("/api/user", func(output http.ResponseWriter, request *http.Request) {
-		handlers.Leaders(users, output, request)
+		handlers.Leaders(db, output, request)
 	}).Methods("GET")
 
 	router.HandleFunc("/api/session/new", func(output http.ResponseWriter, request *http.Request) {
-		handlers.SignUp(ids, users, output, request)
+		handlers.SignUp(db, output, request)
 	}).Methods("POST")
 
 	router.HandleFunc("/api/session", func(output http.ResponseWriter, request *http.Request) {
-		handlers.Login(ids, users, output, request)
+		handlers.Login(db, output, request)
 	}).Methods("POST")
 
 	router.HandleFunc("/api/user/me", func(output http.ResponseWriter, request *http.Request) {
-		handlers.Me(users, output, request)
+		handlers.Me(db, output, request)
 	}).Methods("GET")
 
 	router.HandleFunc("/api/session", handlers.Logout).Methods("DELETE")
 
 	router.HandleFunc("/api/user/me", func(output http.ResponseWriter, request *http.Request) {
-		handlers.Update(users, output, request)
+		handlers.Update(db, output, request)
 	}).Methods("POST")
 
 	router.HandleFunc("/api/upload", func(output http.ResponseWriter, request *http.Request) {
-		handlers.Upload(users, output, request)
+		handlers.Upload(db, output, request)
 	}).Methods("POST")
 
 	http.Handle("/", router)
-
+	// logrus
+	contextLogger := logrus.WithFields(logrus.Fields{
+		"mode":   "[access_log]",
+		"logger": "LOGRUS",
+	})
+	logrus.SetFormatter(&logrus.JSONFormatter{})
+	AccessLogOut.LogrusLogger = contextLogger
 	fmt.Println("Server listening port 8000")
 	//log.Fatal(http.ListenAndServe(":8000", c.Handler(router)))
-	handler := c.Handler(router)
+	siteHandler := AccessLogOut.accessLogMiddleware(router)
+	handler := c.Handler(siteHandler)
 	http.ListenAndServe(":8000", handler)
 }
