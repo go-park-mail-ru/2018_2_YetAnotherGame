@@ -41,7 +41,7 @@ func params() string {
 		fmt.Println(err)
 	}
 	pwd, _ := os.Getwd()
-	cfg, err := mini.LoadConfiguration(pwd+"/config/DfBsettings.txt")
+	cfg, err := mini.LoadConfiguration(pwd+"/config/DBsettings.txt")
 	if err!=nil{
 		logrus.Error(err)
 	}
