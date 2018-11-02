@@ -2,27 +2,29 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"os/user"
+	"time"
+
 	"github.com/FogCreek/mini"
 	"github.com/jinzhu/gorm"
 	"github.com/rs/cors"
 	"github.com/sirupsen/logrus"
-	"os"
-	"os/user"
-	"time"
 
 	"2018_2_YetAnotherGame/handlers"
 	"2018_2_YetAnotherGame/models"
 
 	"github.com/gorilla/mux"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
+
 	//"log"
 	"net/http"
 )
 
 type AccessLogger struct {
 	LogrusLogger *logrus.Entry
-
 }
+
 func (ac *AccessLogger) accessLogMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
@@ -33,16 +35,17 @@ func (ac *AccessLogger) accessLogMiddleware(next http.Handler) http.Handler {
 			"remote_addr": r.RemoteAddr,
 			"work_time":   time.Since(start),
 		}).Info(r.URL.Path)
-	})}
+	})
+}
 
 func params() string {
 	u, err := user.Current()
-	if err!=nil{
+	if err != nil {
 		fmt.Println(err)
 	}
 	pwd, _ := os.Getwd()
-	cfg, err := mini.LoadConfiguration(pwd+"/config/DBsettings.txt")
-	if err!=nil{
+	cfg, err := mini.LoadConfiguration(pwd + "/config/DBsettings.txt")
+	if err != nil {
 		logrus.Error(err)
 	}
 
@@ -70,16 +73,11 @@ func main() {
 	}).Info("Starting server")
 	AccessLogOut := new(AccessLogger)
 
-
-
 	db, err := gorm.Open("postgres", params())
-	if err!=nil{
+	if err != nil {
 		logrus.Error(err)
 	}
 	defer db.Close()
-
-
-
 
 	//test users to fill the db
 	db.AutoMigrate(&models.User{})
@@ -97,7 +95,6 @@ func main() {
 	//db.Create(&q5)
 	//db.Create(&q6)
 
-
 	c := cors.New(cors.Options{
 		AllowCredentials: true,
 		AllowedOrigins:   []string{"http://127.0.0.1:3000"},                           // All origins
@@ -105,11 +102,10 @@ func main() {
 
 	})
 
-
 	//mux := http.NewServeMux()
 	router := mux.NewRouter()
 
-	router.HandleFunc("/api/user", func(output http.ResponseWriter, request *http.Request) {
+	router.HandleFunc("/api/leaders", func(output http.ResponseWriter, request *http.Request) {
 		handlers.Leaders(db, output, request)
 	}).Methods("GET")
 
