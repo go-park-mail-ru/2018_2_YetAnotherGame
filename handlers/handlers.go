@@ -234,65 +234,53 @@ func Logout(w http.ResponseWriter, r *http.Request) {
 func Leaders(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 	numberOfPage := 0
 	countOfString := 3
-	canNext := true
+	canNext := false
 
-	if r.URL.Query()["numPage"] != nil {
-		numberOfPage, _ = strconv.Atoi(r.URL.Query()["numPage"][0])
-
+	if r.URL.Query()["page"] != nil {
+		numberOfPage, _ = strconv.Atoi(r.URL.Query()["page"][0])
 	}
 
 	//values2 := []interface{}{}
 	users := make([]*models.User, 0)
-	query:="SELECT ID::text, email::text, first_name::text, last_name::text,username::text, score::integer FROM users;"
+	query := "SELECT ID::text, email::text, first_name::text, last_name::text,username::text, score::integer FROM users;"
 
-	rows,_ := db.Raw(query).Rows()
-
-
-
+	rows, _ := db.Raw(query).Rows()
 
 	for rows.Next() {
 		user := new(models.User)
-		err := rows.Scan(&user.ID,&user.Email,&user.First_name,&user.Last_name, &user.Username,&user.Score)
-		if err != nil {		}
+		err := rows.Scan(&user.ID, &user.Email, &user.First_name, &user.Last_name, &user.Username, &user.Score)
+		if err != nil {
+		}
 
 		users = append(users, user)
 	}
 
-
-
-	values := make([]*models.User, 0)
-
-	for _, value := range users {
-		values = append(values, value)
-	}
-
-	sort.Slice(values, func(i, j int) bool {
-		return values[i].Score > values[j].Score
+	sort.Slice(users, func(i, j int) bool {
+		return users[i].Score > users[j].Score
 	})
 
 	// проверяем можно ли дальше листать
-	if int(math.Ceil(float64(len(values))/float64(countOfString)))-1 < numberOfPage+1 {
-		canNext = false
+	if int(math.Ceil(float64(len(users))/float64(countOfString)))-1 >= numberOfPage+1 {
+		canNext = true
 	}
 
-	values = values[numberOfPage*countOfString : numberOfPage*countOfString+countOfString]
+	users = users[numberOfPage*countOfString : numberOfPage*countOfString+countOfString]
 	//for _, value := range values {
 	//	values2 = append(values2, value)
 	//}
 	//
 	//values2 = append(values2, canNext)
 	b := models.Leaders{}
-	b.Users = values
+	b.Users = users
 	b.CanNext = canNext
 	message, err := json.Marshal(b)
-	if err!=nil{
+	if err != nil {
 		logrus.Error(err)
 
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(message)
 }
-
 //Upload ..
 func Upload(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
