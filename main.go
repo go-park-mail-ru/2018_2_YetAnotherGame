@@ -1,6 +1,7 @@
 package main
 
 import (
+	"2018_2_YetAnotherGame/game"
 	"fmt"
 	"os"
 	"os/user"
@@ -138,7 +139,10 @@ func main() {
 		AllowedMethods:   []string{"GET", "HEAD", "POST", "PUT", "OPTIONS", "DELETE"}, // Allowing only get, just an example
 
 	})
+//TEST ROOOMS
 
+	g:=game.New()
+	go g.Run()
 	//mux := http.NewServeMux()
 	routerAuth := mux.NewRouter()
 	routerAuth.HandleFunc("/api/user/me", func(output http.ResponseWriter, request *http.Request) {
@@ -160,7 +164,9 @@ func main() {
 	router.HandleFunc("/api/leaders", func(output http.ResponseWriter, request *http.Request) {
 		handlers.Leaders(db, output, request)
 	}).Methods("GET")
-
+	router.HandleFunc("/ws", func(output http.ResponseWriter, request *http.Request) {
+		handlers.Test(g, output, request)
+	})
 	router.HandleFunc("/api/session/new", func(output http.ResponseWriter, request *http.Request) {
 		handlers.SignUp(db, output, request)
 	}).Methods("POST")
@@ -184,5 +190,5 @@ func main() {
 	siteHandler := AccessLogOut.accessLogMiddleware(router)
 	siteHandler = panicMiddleware(siteHandler)
 	handler := c.Handler(siteHandler)
-	http.ListenAndServe(":8000", handler)
+	http.ListenAndServe(":9090", handler)
 }
