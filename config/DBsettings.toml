@@ -1,6 +1,6 @@
 host = "127.0.0.1"
 port = "5432"
-sslmode="disable"
+sslmode = "disable"
 dbname = "backend"
 user = "test_user"
 pass = "1"
