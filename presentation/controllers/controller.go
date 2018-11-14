@@ -1,14 +1,14 @@
 package controllers
 
 import (
+	"2018_2_YetAnotherGame/domain/models"
+	"2018_2_YetAnotherGame/domain/repositories"
+	"2018_2_YetAnotherGame/domain/viewmodels"
+	"2018_2_YetAnotherGame/infostructures/functions"
 	"encoding/json"
 	"net/http"
 	"strconv"
 	"time"
-
-	"2018_2_YetAnotherGame/domain/models"
-	"2018_2_YetAnotherGame/domain/repositories"
-	"2018_2_YetAnotherGame/infostructures/functions"
 
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
@@ -132,10 +132,10 @@ func (env *Environment) ScoreboardHandle(w http.ResponseWriter, r *http.Request)
 		numberOfPage, _ = strconv.Atoi(r.URL.Query().Get("page"))
 	}
 
-	users, canNext := repositories.GetScoreboardPage(env.DB, numberOfPage, countOfString)
+	scoreboard, canNext := repositories.GetScoreboardPage(env.DB, numberOfPage, countOfString)
 
-	b := models.Scoreboard{}
-	b.Users = users[:countOfString]
+	b := viewmodels.ScoreboardPageViewModel{}
+	b.Scoreboard.Users = scoreboard.Users[:countOfString]
 	b.CanNext = canNext
 	message, err := json.Marshal(b)
 	if err != nil {

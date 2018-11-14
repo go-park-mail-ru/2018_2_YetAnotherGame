@@ -18,13 +18,13 @@ func GetSessionByID(db *gorm.DB, id string) models.Session {
 	return tmp
 }
 
-func GetScoreboardPage(db *gorm.DB, numberOfPage, countOfString int) ([]models.User, bool) {
-	var users []models.User
-	db.Table("users").Order("score DESC").Offset(numberOfPage * countOfString).Limit(countOfString + 3).Find(&users)
-	if len(users) > countOfString {
-		return users, true
+func GetScoreboardPage(db *gorm.DB, numberOfPage, countOfString int) (models.Scoreboard, bool) {
+	var scoreboard models.Scoreboard
+	db.Table("users").Order("score DESC").Offset(numberOfPage * countOfString).Limit(countOfString + 3).Find(&scoreboard.Users)
+	if len(scoreboard.Users) > countOfString {
+		return scoreboard, true
 	}
-	return users, false
+	return scoreboard, false
 }
 
 func FindUserByID(db *gorm.DB, id string) models.User {
