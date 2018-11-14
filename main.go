@@ -1,11 +1,11 @@
 package main
 
 import (
+	"2018_2_YetAnotherGame/presentation/controllers"
+	"2018_2_YetAnotherGame/presentation/middlewares"
+	"2018_2_YetAnotherGame/presentation/routes"
 	"fmt"
 	"net/http"
-
-	"2018_2_YetAnotherGame/presentation/controllers"
-	"2018_2_YetAnotherGame/presentation/routes"
 
 	"github.com/BurntSushi/toml"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
@@ -36,9 +36,11 @@ func dbSettings() string {
 
 func main() {
 	env := controllers.Environment{}
-	// env.initLog()
+	env.InitLog()
 	env.InitDB("postgres", dbSettings())
 
 	router := routes.Router(&env)
-	http.ListenAndServe(":8000", router)
+	hand := env.Log.AccessLogMiddleware(router)
+	hand = middlewares.PanicMiddleware(hand)
+	http.ListenAndServe(":8000", hand)
 }

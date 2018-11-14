@@ -25,7 +25,7 @@ func (env *Environment) RegistrationHandle(w http.ResponseWriter, r *http.Reques
 	if session.ID != "" {
 		err := functions.BadRequest("already exists", w)
 		if err != nil {
-			env.Log.Error(err)
+			logrus.Error(err)
 		}
 		return
 	}
@@ -50,7 +50,7 @@ func (env *Environment) RegistrationHandle(w http.ResponseWriter, r *http.Reques
 
 	message, err := json.Marshal(ID.String())
 	if err != nil {
-		env.Log.Error(err)
+		logrus.Error(err)
 	}
 	w.Write(message)
 }
@@ -61,7 +61,7 @@ func (env *Environment) LoginHandle(w http.ResponseWriter, r *http.Request) {
 	if authUser.Password == "" || authUser.Email == "" {
 		err := functions.BadRequest("Не указан E-Mail или пароль", w)
 		if err != nil {
-			env.Log.Error(err)
+			logrus.Error(err)
 		}
 		return
 	}
@@ -70,7 +70,7 @@ func (env *Environment) LoginHandle(w http.ResponseWriter, r *http.Request) {
 	if session.ID == "" {
 		err := functions.BadRequest("Неверный E-Mail", w)
 		if err != nil {
-			env.Log.Error(err)
+			logrus.Error(err)
 		}
 		return
 	}
@@ -79,7 +79,7 @@ func (env *Environment) LoginHandle(w http.ResponseWriter, r *http.Request) {
 	if user.Password != authUser.Password {
 		err := functions.BadRequest("неверный пароль", w)
 		if err != nil {
-			env.Log.Error(err)
+			logrus.Error(err)
 		}
 		return
 	}
@@ -95,7 +95,7 @@ func (env *Environment) LoginHandle(w http.ResponseWriter, r *http.Request) {
 
 	message, err := json.Marshal(session.ID)
 	if err != nil {
-		env.Log.Error(err)
+		logrus.Error(err)
 	}
 	w.Write(message)
 }
@@ -103,7 +103,7 @@ func (env *Environment) LoginHandle(w http.ResponseWriter, r *http.Request) {
 func (env *Environment) MeHandle(w http.ResponseWriter, r *http.Request) {
 	Cookies, err := r.Cookie("sessionid")
 	if err != nil {
-		env.Log.Warn("no cookies")
+		logrus.Warn("no cookies")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -119,7 +119,7 @@ func (env *Environment) MeHandle(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	message, err := json.Marshal(user)
 	if err != nil {
-		env.Log.Error(err)
+		logrus.Error(err)
 	}
 	w.Write(message)
 }
@@ -159,7 +159,7 @@ func (env *Environment) LogOutHandle(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	message, err := json.Marshal(id)
 	if err != nil {
-		env.Log.Error(err)
+		logrus.Error(err)
 	}
 	w.Write(message)
 }
