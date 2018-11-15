@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"mime/multipart"
 	"net/http"
 	"os"
@@ -17,6 +18,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/jinzhu/gorm"
 	"github.com/sirupsen/logrus"
+	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/vk"
 )
 
 func (env *Environment) RegistrationHandle(w http.ResponseWriter, r *http.Request) {
@@ -175,7 +178,7 @@ func (env *Environment) AvatarHandle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	file, handle, err := r.FormFile("image")
+	file, _, err := r.FormFile("image")
 	if err != nil {
 		logrus.Error(err)
 		return
@@ -187,9 +190,8 @@ func (env *Environment) AvatarHandle(w http.ResponseWriter, r *http.Request) {
 		logrus.Error(err)
 		return
 	}
-	user_id := id.Value
+	fmt.Println(id.Value)
 
-	saveFile(db, w, file, user_id, handle)
 }
 
 func saveFile(db *gorm.DB, w http.ResponseWriter, file multipart.File, user_id string, handle *multipart.FileHeader) {
@@ -227,4 +229,75 @@ func jsonResponse(w http.ResponseWriter, code int, message string) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
 	fmt.Fprint(w, message)
+}
+
+/*	Берем данные которые приходят JSON'ом в теле ответа и парсим их в
+ *	VKRosonseData добавляем к этому email и все эти данные пушим в проверяя нет ли такого юзера
+ *	!!!Проблема: в вк может и не быть email'a, и тогда поле email в базе будет пустым, а оно ключевое
+ *	Вариант решения: просить пользователя самому его вводить
+ *
+ */
+
+const (
+	APP_ID          = "6752650"
+	APP_KEY         = "GUYoUbMgTZpYopPzrO5b"
+	APP_SECRET      = "035ac1d8035ac1d8035ac1d8d4033dc8520035a035ac1d858b7a9b5f658c1e4bdba9b12"
+	API_URL         = "https://api.vk.com/method/users.get?fields=email,photo_50&access_token=%s&v=5.52"
+	API_RedirectURL = "http://127.0.0.1:8000/api/vkauth"
+)
+
+type VKResponseData struct {
+	Response []struct {
+		FirstName string `json:"first_name"`
+		LastName  string `json:"last_name"`
+		Photo     string `json:"photo_100"`
+	}
+	Email string
+}
+
+// https://oauth.vk.com/authorize?client_id=6752650&redirect_uri=http://127.0.0.1:8000/api/vkauth&scope=4194306
+
+func (env *Environment) VKRegister(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	code := r.FormValue("code")
+	conf := oauth2.Config{
+		ClientID:     APP_ID,
+		ClientSecret: APP_KEY,
+		RedirectURL:  API_RedirectURL,
+		Endpoint:     vk.Endpoint,
+	}
+
+	token, err := conf.Exchange(ctx, code)
+	if err != nil {
+		log.Printf("Bad Exchange: %v", err)
+		return
+	}
+	var email string
+	if token.Extra("email") != nil {
+		email = token.Extra("email").(string)
+	}
+
+	client := conf.Client(ctx, token)
+
+	resp, err := client.Get(fmt.Sprintf(API_URL, token.AccessToken))
+	if err != nil {
+		log.Printf("Bad resp: %v", err)
+		return
+	}
+
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+
+	fmt.Println(string(body))
+
+	if err != nil {
+		log.Printf("Bad read body: %v", err)
+		return
+	}
+
+	data := VKResponseData{}
+	json.Unmarshal(body, &data)
+	data.Email = email //Теперь из Имени и Фамилии можно сделать Юзернейм и не будет только пароля, но можно добавить токен для валидации
+
 }

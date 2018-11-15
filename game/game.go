@@ -1,14 +1,13 @@
 package game
 
 import (
-	"2018_2_YetAnotherGame/player"
 	"2018_2_YetAnotherGame/room"
 	"fmt"
 	"log"
 
 	"github.com/google/uuid"
 
-	"golang.org/x/net/websocket"
+	"github.com/gorilla/websocket"
 )
 
 type Game struct {
@@ -33,7 +32,7 @@ func (g *Game) Run() {
 	}
 }
 
-func (g *Game) FindRoom() *Room {
+func (g *Game) FindRoom() *room.Room {
 	for _, r := range g.Rooms {
 		if len(r.Players) < r.MaxPlayers {
 			return r
@@ -42,7 +41,7 @@ func (g *Game) FindRoom() *Room {
 	if len(g.Rooms) >= g.MaxRooms {
 		return nil
 	}
-	r := New()
+	r := room.New()
 	go r.ListenToPlayers()
 	g.Rooms[r.ID] = r
 	log.Println("room %s created", r.ID)
@@ -52,7 +51,7 @@ func (g *Game) FindRoom() *Room {
 func (g *Game) ProcessConn(conn *websocket.Conn) {
 	id := uuid.New().String()
 
-	p := &player.Player{
+	p := &room.Player{
 		Conn: conn,
 		ID:   id,
 	}
