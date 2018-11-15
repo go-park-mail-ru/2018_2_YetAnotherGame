@@ -6,11 +6,16 @@ import (
 	"2018_2_YetAnotherGame/domain/viewmodels"
 	"2018_2_YetAnotherGame/infostructures/functions"
 	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"mime/multipart"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jinzhu/gorm"
 	"github.com/sirupsen/logrus"
 )
 
@@ -104,7 +109,7 @@ func (env *Environment) MeHandle(w http.ResponseWriter, r *http.Request) {
 	Cookies, err := r.Cookie("sessionid")
 	if err != nil {
 		logrus.Warn("no cookies")
-		w.WriteHeader(http.StatusBadRequest)
+		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 	ID := Cookies.Value
@@ -164,25 +169,62 @@ func (env *Environment) LogOutHandle(w http.ResponseWriter, r *http.Request) {
 	w.Write(message)
 }
 
-// func (env *Environment) AvatarHandle(w http.ResponseWriter, r *http.Request) {
-// 	if r.Method != http.MethodPost {
-// 		http.Redirect(w, r, "/", http.StatusSeeOther)
-// 		return
-// 	}
+func (env *Environment) AvatarHandle(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+		return
+	}
 
-// 	file, handle, err := r.FormFile("image")
-// 	if err != nil {
-// 		logrus.Error(err)
-// 		return
-// 	}
-// 	defer file.Close()
+	file, handle, err := r.FormFile("image")
+	if err != nil {
+		logrus.Error(err)
+		return
+	}
+	defer file.Close()
 
-// 	id, err := r.Cookie("sessionid")
-// 	if err != nil {
-// 		logrus.Error(err)
-// 		return
-// 	}
-// 	user_id := id.Value
+	id, err := r.Cookie("sessionid")
+	if err != nil {
+		logrus.Error(err)
+		return
+	}
+	user_id := id.Value
 
-// 	saveFile(db, w, file, user_id, handle)
-// }
+	saveFile(db, w, file, user_id, handle)
+}
+
+func saveFile(db *gorm.DB, w http.ResponseWriter, file multipart.File, user_id string, handle *multipart.FileHeader) {
+	data, err := ioutil.ReadAll(file)
+	if err != nil {
+		logrus.Error(err)
+		return
+	}
+
+	pwd, err := os.Getwd()
+	if err != nil {
+		logrus.Error(err)
+		os.Exit(1)
+	}
+
+	// fmt.Println(pwd)
+	// src := pwd + "/uploads/" + users[user_id].Email + ".jpeg"
+	tmpuser := models.User{}
+	//db.Table("users ").Select("id, email, first_name, last_name, username ").Where("id = ?", tmpuser).Scan(&tmpuser)
+	src := pwd + "/uploads/" + tmpuser.Email + handle.Filename
+
+	err = ioutil.WriteFile(src, data, 0666)
+	if err != nil {
+		logrus.Error(err)
+		return
+	}
+	//tmpuser.Avatar = src
+	db.Table("users ").Select("id, email, first_name, last_name, username, password, score, avatar ").Where("id = ?", user_id).Scan(&tmpuser)
+	//users.Store(user_id, tmpuser)
+	db.Model(&tmpuser).Updates(models.User{Avatar: src}).Where("id = ?", user_id)
+	jsonResponse(w, http.StatusCreated, "File uploaded successfully!.")
+}
+
+func jsonResponse(w http.ResponseWriter, code int, message string) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(code)
+	fmt.Fprint(w, message)
+}

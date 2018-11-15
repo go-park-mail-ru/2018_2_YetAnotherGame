@@ -22,6 +22,6 @@ func Router(env *controllers.Environment) http.Handler {
 	router.HandleFunc("/api/users/me", env.MeHandle).Methods("GET")
 	router.HandleFunc("/api/leaders", env.ScoreboardHandle).Methods("GET")
 	router.HandleFunc("/api/session", env.LogOutHandle).Methods("DELETE")
-	// router.HandleFunc("/api/avatar", env.)
+	router.HandleFunc("/api/avatar", env.AvatarHandle)
 	return c.Handler(router)
 }

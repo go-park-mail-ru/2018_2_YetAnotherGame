@@ -1,6 +1,7 @@
 package main
 
 import (
+	"2018_2_YetAnotherGame/domain/models"
 	"2018_2_YetAnotherGame/presentation/controllers"
 	"2018_2_YetAnotherGame/presentation/middlewares"
 	"2018_2_YetAnotherGame/presentation/routes"
@@ -39,8 +40,10 @@ func main() {
 	env.InitLog()
 	env.InitDB("postgres", dbSettings())
 
+	g := models.Game.New()
+
 	router := routes.Router(&env)
 	hand := env.Log.AccessLogMiddleware(router)
-	hand = middlewares.PanicMiddleware(hand)
+	hand = middlewares.CORSMiddleware(middlewares.PanicMiddleware(hand))
 	http.ListenAndServe(":8000", hand)
 }
