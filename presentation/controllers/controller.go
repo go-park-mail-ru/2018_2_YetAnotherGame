@@ -191,6 +191,9 @@ func (env *Environment) AvatarHandle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	fmt.Println(id.Value)
+	//user_id := id.Value
+	//
+	//env.saveFile(w, file, user_id, handle)
 
 }
 
@@ -224,6 +227,39 @@ func saveFile(db *gorm.DB, w http.ResponseWriter, file multipart.File, user_id s
 	db.Model(&tmpuser).Updates(models.User{Avatar: src}).Where("id = ?", user_id)
 	jsonResponse(w, http.StatusCreated, "File uploaded successfully!.")
 }
+
+func (env *Environment) UpdateHandle (w http.ResponseWriter, r *http.Request){
+	tmp := models.User{}
+	json.NewDecoder(r.Body).Decode(&tmp)
+	id, _ := r.Cookie("sessionid")
+	id2 := id.Value
+	user_id := id2
+	//fmt.Println(r.MatchString("peach"))
+	ses := models.Session{}
+
+	env.DB.Table("sessions").Select("id, email").Where("email = ?", user_id).Scan(&ses)
+
+	if ses.ID == "" {
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		msg := models.Error{Msg: "Нет пользователей"}
+		message, err := json.Marshal(msg)
+		if err != nil {
+			logrus.Error(err)
+
+		}
+		w.Write(message)
+	}
+	tmpuser := models.User{}
+	env.DB.Table("users ").Select("id, email, first_name, last_name, username, password, score, avatar ").Where("id = ?", user_id).Scan(&tmpuser)
+	env.DB.Model(&tmpuser).Updates(models.User{Email: tmp.Email, FirstName: tmp.FirstName, LastName: tmp.LastName, Username: tmp.Username}).Where("id = ?", user_id)
+	env.DB.Save(&tmpuser)
+
+
+}
+
+
 
 func jsonResponse(w http.ResponseWriter, code int, message string) {
 	w.Header().Set("Content-Type", "application/json")

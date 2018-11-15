@@ -2,12 +2,13 @@ package main
 
 import (
 	"2018_2_YetAnotherGame/presentation/controllers"
-	"2018_2_YetAnotherGame/presentation/middlewares"
+
 	"2018_2_YetAnotherGame/presentation/routes"
 	"fmt"
+	"github.com/BurntSushi/toml"
 	"net/http"
 
-	"github.com/BurntSushi/toml"
+
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 )
 
@@ -43,6 +44,6 @@ func main() {
 
 	router := routes.Router(&env)
 	hand := env.Log.AccessLogMiddleware(router)
-	hand = middlewares.CORSMiddleware(middlewares.PanicMiddleware(hand))
+	hand = controllers.CORSMiddleware(controllers.PanicMiddleware(hand))
 	http.ListenAndServe(":8000", hand)
 }

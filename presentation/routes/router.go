@@ -9,13 +9,22 @@ import (
 )
 
 func Router(env *controllers.Environment) http.Handler {
+	routerAuth := mux.NewRouter()
+	routerAuth.HandleFunc("/api/user/me", env.MeHandle).Methods("GET")
+	routerAuth.HandleFunc("/api/user/me",env.UpdateHandle).Methods("POST")
+	routerAuth.HandleFunc("/api/avatar", env.AvatarHandle).Methods("POST")
+	routerAuth.HandleFunc("/api/session",env.LogOutHandle).Methods("DELETE")
+	authHandler := env.AuthMiddleware(routerAuth)
+
 	router := mux.NewRouter()
-	router.HandleFunc("/api/vkauth", env.VKRegister)
-	router.HandleFunc("/api/session", env.LoginHandle).Methods("POST")
-	router.HandleFunc("/api/session/new", env.RegistrationHandle).Methods("POST")
-	router.HandleFunc("/api/users/me", env.MeHandle).Methods("GET")
+	router.Handle("/api/user/me",authHandler)
+	router.Handle("/api/session",authHandler).Methods("DELETE")
+	router.Handle("/api/upload",authHandler)
 	router.HandleFunc("/api/leaders", env.ScoreboardHandle).Methods("GET")
-	router.HandleFunc("/api/session", env.LogOutHandle).Methods("DELETE")
-	router.HandleFunc("/api/avatar", env.AvatarHandle)
+
+	router.HandleFunc("/api/session/new", env.RegistrationHandle).Methods("POST")
+
+	router.HandleFunc("/api/session", env.LoginHandle).Methods("POST")
+	router.HandleFunc("/api/vkauth", env.VKRegister)
 	return router
 }
