@@ -231,6 +231,29 @@ func jsonResponse(w http.ResponseWriter, code int, message string) {
 	fmt.Fprint(w, message)
 }
 
+func (env *Environment) UpdateHandle(w http.ResponseWriter, r *http.Request) {
+	user := models.User{}
+	json.NewDecoder(r.Body).Decode(&user)
+	cookies, _ := r.Cookie("sessionid")
+	id := cookies.Value
+	userID := id
+	//fmt.Println(r.MatchString("peach"))
+	session := models.Session{}
+	env.DB.Table("sessions").Select("id, email").Where("email = ?", userID).Scan(&session)
+
+	if session.ID == "" {
+		err := functions.BadRequest("Нет пользователей", w)
+		if err != nil {
+			logrus.Error(err)
+		}
+	}
+	tmpuser := models.User{}
+	env.DB.Table("users ").Select("id, email, first_name, last_name, username, password, score, avatar ").Where("id = ?", userID).Scan(&tmpuser)
+	env.DB.Model(&tmpuser).Updates(models.User{Email: user.Email, FirstName: user.FirstName, LastName: user.LastName, Username: user.Username}).Where("id = ?", userID)
+	env.DB.Save(&tmpuser)
+
+}
+
 /*	Берем данные которые приходят JSON'ом в теле ответа и парсим их в
  *	VKRosonseData добавляем к этому email и все эти данные пушим в проверяя нет ли такого юзера
  *	!!!Проблема: в вк может и не быть email'a, и тогда поле email в базе будет пустым, а оно ключевое

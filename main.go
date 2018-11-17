@@ -41,8 +41,13 @@ func main() {
 
 	// g := game.New()
 
-	router := routes.Router(&env)
-	hand := env.Log.AccessLogMiddleware(router)
-	hand = middlewares.CORSMiddleware(middlewares.PanicMiddleware(hand))
-	http.ListenAndServe(":8000", hand)
+	r := routes.Router(&env)
+	r = env.Log.AccessLogMiddleware(
+		middlewares.PanicMiddleware(
+			middlewares.CORSMiddleware(
+				r,
+			),
+		),
+	)
+	http.ListenAndServe(":8000", r)
 }
