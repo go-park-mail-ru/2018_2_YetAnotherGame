@@ -178,7 +178,7 @@ func (env *Environment) AvatarHandle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	file, _, err := r.FormFile("image")
+	file, handle, err := r.FormFile("image")
 	if err != nil {
 		logrus.Error(err)
 		return
@@ -192,6 +192,7 @@ func (env *Environment) AvatarHandle(w http.ResponseWriter, r *http.Request) {
 	}
 	fmt.Println(id.Value)
 
+	saveFile(env.DB, w, file, id.Value, handle)
 }
 
 func saveFile(db *gorm.DB, w http.ResponseWriter, file multipart.File, user_id string, handle *multipart.FileHeader) {
