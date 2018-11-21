@@ -16,7 +16,7 @@ type Position struct {
 type PlayerData struct {
 	ID       string
 	Username string
-	HP       string
+	Score       string
 	Position Position
 }
 

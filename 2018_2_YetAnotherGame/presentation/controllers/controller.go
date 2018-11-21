@@ -7,6 +7,7 @@ import (
 	"2018_2_YetAnotherGame/infostructures/functions"
 	"encoding/json"
 	"fmt"
+	"github.com/gorilla/websocket"
 	"io/ioutil"
 	"log"
 	"mime/multipart"
@@ -21,6 +22,22 @@ import (
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/vk"
 )
+
+
+func (env *Environment) Test(w http.ResponseWriter, r *http.Request) {
+
+	log.Printf ("open connection")
+	upgrader := websocket.Upgrader{
+		CheckOrigin: func(r *http.Request) bool{ return true},
+	}
+	conn, err := upgrader.Upgrade( w, r, nil)
+	if err != nil {
+		log.Printf("cannot upgrade connection: ", err)
+	}
+
+	env.Game.Register <-conn
+}
+
 
 func (env *Environment) RegistrationHandle(w http.ResponseWriter, r *http.Request) {
 	user := models.User{}

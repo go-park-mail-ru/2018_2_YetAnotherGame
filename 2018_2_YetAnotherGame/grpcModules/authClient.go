@@ -16,7 +16,13 @@ func SendCheckInfo(id string) string {
 	}
 	defer conn.Close()
 	c := api.NewPingClient(conn)
-	response, err := c.CheckSession(context.Background(), &api.PingMessage{Message: id})
+	ctx := context.Background()
+	//md := metadata.Pairs(
+	//	"w", string(w),
+	//	"r", r",
+	//)
+	//ctx = metadata.NewOutgoingContext(ctx, md)
+	response, err := c.CheckSession(ctx, &api.PingMessage{Message: id})
 	if err != nil {
 		log.Fatalf("Error when calling CheckSession: %s", err)
 	}

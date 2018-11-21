@@ -27,13 +27,17 @@ type Command struct {
 type NewPlayer struct {
 	Username string `json:"username"`
 }
+type NewScore struct {
+
+	Score string `json:"score"`
+}
 
 type State struct {
 	Players []PlayerData
 }
 
 func (r *Room) Run() {
-	r.Ticker = time.NewTicker(time.Second)
+	r.Ticker = time.NewTicker(time.Millisecond*100)
 	go r.RunBroadcast()
 	for {
 		<-r.Ticker.C
@@ -57,7 +61,10 @@ func (r *Room) RunBroadcast() {
 		}
 	}
 }
-
+type message struct {
+	// the json tag means this will serialize as a lowercased field
+	Message string `json:"message"`
+}
 func (r *Room) ListenToPlayers() {
 	for {
 		m := <-r.Message
@@ -67,7 +74,17 @@ func (r *Room) ListenToPlayers() {
 			np := &NewPlayer{}
 			json.Unmarshal(m.Payload, np)
 			m.Player.Data.Username = np.Username
-
+		case "Score":
+			log.Printf("rmessage %s %v", m.Player.ID, string(m.Payload))
+			ns := &NewScore{}
+			json.Unmarshal(m.Payload, ns)
+			m.Player.Data.Score = ns.Score
+			//for k, v :=  range  r.Players {
+				//if k!=m.Player.ID{
+					//m2 := message{"Thanks for the message!"}
+					//v.Conn.WriteJSON(m2)
+				//}
+			//}
 		}
 	}
 }

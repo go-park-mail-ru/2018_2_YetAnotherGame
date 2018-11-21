@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"2018_2_YetAnotherGame/game"
 	"2018_2_YetAnotherGame/presentation/middlewares"
 
 	"github.com/jinzhu/gorm"
@@ -10,6 +11,7 @@ import (
 type Environment struct {
 	DB  *gorm.DB
 	Log *middlewares.AccessLogger
+	Game *game.Game
 }
 
 func (env *Environment) InitDB(dialect, connStr string) {
@@ -18,6 +20,12 @@ func (env *Environment) InitDB(dialect, connStr string) {
 		logrus.Error(err)
 	}
 	env.DB = db
+}
+
+func (env *Environment) InitGame() {
+
+	env.Game = game.New()
+	go env.Game.Run()
 }
 
 func (env *Environment) InitLog() {

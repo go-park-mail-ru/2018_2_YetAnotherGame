@@ -55,6 +55,7 @@ func (g *Game) ProcessConn(conn *websocket.Conn) {
 		Conn: conn,
 		ID:   id,
 	}
+	p.Data.ID=p.ID
 	r := g.FindRoom()
 	if r == nil {
 		return

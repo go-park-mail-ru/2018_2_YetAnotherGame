@@ -38,7 +38,7 @@ func main() {
 	env := controllers.Environment{}
 	env.InitLog()
 	env.InitDB("postgres", dbSettings())
-
+	env.InitGame()
 	// g := game.New()
 
 	r := routes.Router(&env)
@@ -49,5 +49,5 @@ func main() {
 			),
 		),
 	)
-	http.ListenAndServe(":8000", r)
+	http.ListenAndServe(":9090", r)
 }
