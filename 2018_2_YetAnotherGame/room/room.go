@@ -30,10 +30,13 @@ type NewPlayer struct {
 type NewScore struct {
 
 	Score string `json:"score"`
+	X string `json:"x"`
+	Y string `json:"y"`
 }
 
 type State struct {
 	Players []PlayerData
+	Message *Message
 }
 
 func (r *Room) Run() {
@@ -61,8 +64,8 @@ func (r *Room) RunBroadcast() {
 		}
 	}
 }
-type message struct {
-	// the json tag means this will serialize as a lowercased field
+type Message struct {
+	Author string `json:"author"`
 	Message string `json:"message"`
 }
 func (r *Room) ListenToPlayers() {
@@ -74,17 +77,23 @@ func (r *Room) ListenToPlayers() {
 			np := &NewPlayer{}
 			json.Unmarshal(m.Payload, np)
 			m.Player.Data.Username = np.Username
-		case "Score":
+		case "Info":
 			log.Printf("rmessage %s %v", m.Player.ID, string(m.Payload))
 			ns := &NewScore{}
 			json.Unmarshal(m.Payload, ns)
 			m.Player.Data.Score = ns.Score
-			//for k, v :=  range  r.Players {
-				//if k!=m.Player.ID{
-					//m2 := message{"Thanks for the message!"}
-					//v.Conn.WriteJSON(m2)
-				//}
-			//}
+			m.Player.Data.Position.X=ns.X
+			m.Player.Data.Position.Y=ns.Y
+		case "Chat":
+			log.Printf("rmessage %s %v", m.Player.ID, string(m.Payload))
+			msg := &Message{}
+			json.Unmarshal(m.Payload, msg)
+			state := State{
+				Message: msg,
+			}
+			r.Broadcast <- &state
+
+
 		}
 	}
 }

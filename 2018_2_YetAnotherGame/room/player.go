@@ -9,8 +9,8 @@ import (
 )
 
 type Position struct {
-	X int
-	Y int
+	X string
+	Y string
 }
 
 type PlayerData struct {
