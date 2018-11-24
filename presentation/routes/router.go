@@ -13,7 +13,7 @@ func Router(env *controllers.Environment) http.Handler {
 	routerAuth := mux.NewRouter()
 	routerAuth.HandleFunc("/api/users/me", env.MeHandle).Methods("GET")
 	routerAuth.HandleFunc("/api/users/me", env.UpdateHandle).Methods("POST")
-	routerAuth.HandleFunc("/api/avatar", env.AvatarHandle).Methods("POST")
+	routerAuth.HandleFunc("/api/upload", env.AvatarHandle).Methods("POST")
 	routerAuth.HandleFunc("/api/session", env.LogOutHandle).Methods("DELETE")
 	authHandler := middlewares.AuthMiddleware(routerAuth, env.DB)
 

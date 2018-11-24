@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"math"
 	"mime/multipart"
 	"net/http"
 	"os"
@@ -142,8 +143,9 @@ func (env *Environment) ScoreboardHandle(w http.ResponseWriter, r *http.Request)
 
 	scoreboard, canNext := repositories.GetScoreboardPage(env.DB, numberOfPage, countOfString)
 
+	n := math.Min(float64(len(scoreboard.Users)), float64(countOfString))
 	b := viewmodels.ScoreboardPageViewModel{}
-	b.Scoreboard.Users = scoreboard.Users[:countOfString]
+	b.Scoreboard.Users = scoreboard.Users[:int(n)]
 	b.CanNext = canNext
 	message, err := json.Marshal(b)
 	if err != nil {
@@ -178,7 +180,7 @@ func (env *Environment) AvatarHandle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	file, _, err := r.FormFile("image")
+	file, handle, err := r.FormFile("image")
 	if err != nil {
 		logrus.Error(err)
 		return
@@ -191,7 +193,7 @@ func (env *Environment) AvatarHandle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	fmt.Println(id.Value)
-
+	saveFile(env.DB, w, file, id.Value, handle)
 }
 
 func saveFile(db *gorm.DB, w http.ResponseWriter, file multipart.File, user_id string, handle *multipart.FileHeader) {
@@ -211,6 +213,8 @@ func saveFile(db *gorm.DB, w http.ResponseWriter, file multipart.File, user_id s
 	// src := pwd + "/uploads/" + users[user_id].Email + ".jpeg"
 	tmpuser := models.User{}
 	//db.Table("users ").Select("id, email, first_name, last_name, username ").Where("id = ?", tmpuser).Scan(&tmpuser)
+	db.Table("users ").Select("id, email, first_name, last_name, username, password, score, avatar ").Where("id = ?", user_id).Scan(&tmpuser)
+
 	src := pwd + "/uploads/" + tmpuser.Email + handle.Filename
 
 	err = ioutil.WriteFile(src, data, 0666)
@@ -219,7 +223,6 @@ func saveFile(db *gorm.DB, w http.ResponseWriter, file multipart.File, user_id s
 		return
 	}
 	//tmpuser.Avatar = src
-	db.Table("users ").Select("id, email, first_name, last_name, username, password, score, avatar ").Where("id = ?", user_id).Scan(&tmpuser)
 	//users.Store(user_id, tmpuser)
 	db.Model(&tmpuser).Updates(models.User{Avatar: src}).Where("id = ?", user_id)
 	jsonResponse(w, http.StatusCreated, "File uploaded successfully!.")
@@ -235,11 +238,11 @@ func (env *Environment) UpdateHandle(w http.ResponseWriter, r *http.Request) {
 	user := models.User{}
 	json.NewDecoder(r.Body).Decode(&user)
 	cookies, _ := r.Cookie("sessionid")
-	id := cookies.Value
-	userID := id
+	// id := cookies.Value
+	userID := cookies.Value
 	//fmt.Println(r.MatchString("peach"))
 	session := models.Session{}
-	env.DB.Table("sessions").Select("id, email").Where("email = ?", userID).Scan(&session)
+	env.DB.Table("sessions").Select("id, email").Where("id = ?", userID).Scan(&session)
 
 	if session.ID == "" {
 		err := functions.BadRequest("Нет пользователей", w)
