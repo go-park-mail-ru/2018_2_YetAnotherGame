@@ -1,7 +1,7 @@
 package game
 
 import (
-	"GameWS/room"
+	"GameMS/room"
 	"fmt"
 	"log"
 

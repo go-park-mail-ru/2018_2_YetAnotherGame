@@ -1,8 +1,8 @@
 package main
 
 import (
-	"GameWS/game"
-	"GameWS/middlewares"
+	"GameMS/game"
+	"GameMS/middlewares"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 	"github.com/rs/cors"
