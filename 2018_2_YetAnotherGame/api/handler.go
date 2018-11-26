@@ -9,7 +9,6 @@ import (
 	"log"
 	"golang.org/x/net/context"
 	//"net/http"
-	"google.golang.org/grpc/metadata"
 
 )
 
@@ -41,8 +40,7 @@ func (s *Server) CheckSession(ctx context.Context, in *PingMessage) (*PingMessag
 	log.Printf("Receive message %s", in.Message)
 
 
-md, _ := metadata.FromIncomingContext(ctx)
-fmt.Println(md)
+
 id:=in.Message
 	db, err := gorm.Open("postgres", dbSettings())
 	if err!=nil{

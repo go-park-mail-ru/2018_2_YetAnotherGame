@@ -22,6 +22,13 @@ import (
 	"golang.org/x/oauth2/vk"
 )
 
+
+func (env *Environment) Test(w http.ResponseWriter, r *http.Request) {
+	http.Redirect(w, r, "http://127.0.0.1:8081/ws", http.StatusSeeOther)  
+
+}
+
+
 func (env *Environment) RegistrationHandle(w http.ResponseWriter, r *http.Request) {
 	user := models.User{}
 	json.NewDecoder(r.Body).Decode(&user)
