@@ -2,8 +2,7 @@ package room
 
 import (
 	"encoding/json"
-	"os/exec"
-	"strings"
+	"github.com/google/uuid"
 	"time"
 )
 
@@ -43,7 +42,6 @@ func (r *Room) Run() {
 	go r.RunBroadcast()
 	for {
 		<-r.Ticker.C
-		//log.Printf("room tick %s players %v", r.ID, len(r.Players))
 		players := []PlayerData{}
 		for _, p := range r.Players {
 			players = append(players, p.Data)
@@ -101,10 +99,7 @@ func (r *Room) ListenToPlayers() {
 }
 
 func New() *Room {
-	id2, _ := exec.Command("uuidgen").Output()
-
-	stringID := string(id2[:])
-	id := strings.Trim(stringID, "\n")
+	id := uuid.New().String()
 	return &Room{
 		ID:         id,
 		MaxPlayers: 2,

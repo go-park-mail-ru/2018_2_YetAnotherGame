@@ -3,6 +3,7 @@ package controllers
 import (
 
 	"2018_2_YetAnotherGame/presentation/middlewares"
+	"github.com/prometheus/client_golang/prometheus"
 
 	"github.com/jinzhu/gorm"
 	"github.com/sirupsen/logrus"
@@ -11,7 +12,7 @@ import (
 type Environment struct {
 	DB  *gorm.DB
 	Log *middlewares.AccessLogger
-
+	Counter *prometheus.CounterVec
 }
 
 func (env *Environment) InitDB(dialect, connStr string) {

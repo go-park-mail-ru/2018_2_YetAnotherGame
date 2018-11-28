@@ -2,18 +2,19 @@ package functions
 
 import (
 	"2018_2_YetAnotherGame/domain/models"
-	"encoding/json"
+	"github.com/mailru/easyjson"
 	"net/http"
 )
 
-func BadRequest(mes string, w http.ResponseWriter) error {
+func SendStatus(mes string, w http.ResponseWriter, header int) error {
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusBadRequest)
+	w.WriteHeader(header)
 	msg := models.Error{Msg: mes}
-	message, err := json.Marshal(msg)
+	message, err := easyjson.Marshal(msg)
 	if err != nil {
 		return err
 	}
 	w.Write(message)
 	return nil
 }
+

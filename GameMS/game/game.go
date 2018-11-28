@@ -3,6 +3,7 @@ package game
 import (
 	"GameMS/room"
 	"fmt"
+	"github.com/prometheus/client_golang/prometheus"
 	"log"
 
 	"github.com/google/uuid"
@@ -10,10 +11,15 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+type Metrics struct {
+	Counter *prometheus.SummaryVec
+}
+
 type Game struct {
 	Rooms    map[string]*room.Room
 	MaxRooms int
 	Register chan *websocket.Conn
+	AmountRooms int
 }
 
 func New() *Game {
@@ -21,6 +27,7 @@ func New() *Game {
 		Rooms:    make(map[string]*room.Room),
 		MaxRooms: 2,
 		Register: make(chan *websocket.Conn),
+		AmountRooms:0,
 	}
 }
 
@@ -44,6 +51,7 @@ func (g *Game) FindRoom() *room.Room {
 	r := room.New()
 	go r.ListenToPlayers()
 	g.Rooms[r.ID] = r
+	g.AmountRooms+=1
 	log.Println("room %s created", r.ID)
 	return r
 }

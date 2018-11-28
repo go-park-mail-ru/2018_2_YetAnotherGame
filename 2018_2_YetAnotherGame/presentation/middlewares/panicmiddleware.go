@@ -6,7 +6,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func PanicMiddleware(next http.Handler) http.Handler {
+func  PanicMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		logrus.Info("panicMiddleware", r.URL.Path)
 		defer func() {
@@ -16,5 +16,6 @@ func PanicMiddleware(next http.Handler) http.Handler {
 			}
 		}()
 		next.ServeHTTP(w, r)
+
 	})
 }

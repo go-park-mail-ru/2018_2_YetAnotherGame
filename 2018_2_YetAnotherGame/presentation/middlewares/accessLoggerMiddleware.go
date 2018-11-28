@@ -1,6 +1,7 @@
 package middlewares
 
 import (
+
 	"net/http"
 	"time"
 
@@ -21,5 +22,7 @@ func (ac *AccessLogger) AccessLogMiddleware(next http.Handler) http.Handler {
 			"remote_addr": r.RemoteAddr,
 			"work_time":   time.Since(start),
 		}).Info(r.URL.Path)
+
+
 	})
 }

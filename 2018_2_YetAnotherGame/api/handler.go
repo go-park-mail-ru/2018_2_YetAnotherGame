@@ -14,7 +14,8 @@ import (
 
 func dbSettings() string {
 	conf := &DbConfig{}
-	toml.DecodeFile("./config/DBsettings.toml", conf)
+	_, err:=toml.DecodeFile("./config/DBsettings.toml", conf)
+	fmt.Println(err)
 	fmt.Printf("%s", conf.String())
 	return conf.String()
 }

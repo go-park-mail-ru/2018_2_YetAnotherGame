@@ -5,6 +5,7 @@ import (
 	"2018_2_YetAnotherGame/presentation/middlewares"
 	"2018_2_YetAnotherGame/presentation/routes"
 	"fmt"
+	"github.com/prometheus/client_golang/prometheus"
 	"net/http"
 
 	"github.com/BurntSushi/toml"
@@ -39,6 +40,18 @@ func main() {
 	env.InitLog()
 	env.InitDB("postgres", dbSettings())
 
+	env.Counter=prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name:"method_counter",
+		Help:"fffg",
+	},
+		[]string{"method", "status"},
+	)
+	//met.Counter=prometheus.NewCounterVec(prometheus.CounterOpts{
+	//	Name:"method_counter",
+	//	Help:"fffg",
+	//},
+	//	[]string{"method", "status"},
+	//)
 	// g := game.New()
 
 	r := routes.Router(&env)
@@ -46,8 +59,7 @@ func main() {
 		middlewares.PanicMiddleware(
 			middlewares.CORSMiddleware(
 				r,
-			),
-		),
+			)),
 	)
 	http.ListenAndServe(":8000", r)
 }

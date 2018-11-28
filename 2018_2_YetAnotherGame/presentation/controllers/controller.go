@@ -5,8 +5,8 @@ import (
 	"2018_2_YetAnotherGame/domain/repositories"
 	"2018_2_YetAnotherGame/domain/viewmodels"
 	"2018_2_YetAnotherGame/infostructures/functions"
-	"encoding/json"
 	"fmt"
+	"github.com/mailru/easyjson"
 	"io/ioutil"
 	"log"
 	"mime/multipart"
@@ -22,23 +22,34 @@ import (
 	"golang.org/x/oauth2/vk"
 )
 
+const (
+	APP_ID          = "6752650"
+	APP_KEY         = "GUYoUbMgTZpYopPzrO5b"
+	APP_SECRET      = "035ac1d8035ac1d8035ac1d8d4033dc8520035a035ac1d858b7a9b5f658c1e4bdba9b12"
+	API_URL         = "https://api.vk.com/method/users.get?fields=email,photo_50&access_token=%s&v=5.52"
+	API_RedirectURL = "http://127.0.0.1:8000/api/vkauth"
+)
 
-func (env *Environment) Test(w http.ResponseWriter, r *http.Request) {
-	http.Redirect(w, r, "http://127.0.0.1:8081/ws", http.StatusSeeOther)  
-
+type VKResponseData struct {
+	Response []struct {
+		FirstName string `json:"first_name"`
+		LastName  string `json:"last_name"`
+		Photo     string `json:"photo_100"`
+	}
+	Email string
 }
-
 
 func (env *Environment) RegistrationHandle(w http.ResponseWriter, r *http.Request) {
 	user := models.User{}
-	json.NewDecoder(r.Body).Decode(&user)
-
+	//json.NewDecoder(r.Body).Decode(&user)
+	easyjson.UnmarshalFromReader(r.Body, &user)
 	// userAvatar, handler, err := r.FormFile("image")
 
 	session := repositories.GetSessionByEmail(env.DB, user.Email)
 
 	if session.ID != "" {
-		err := functions.BadRequest("already exists", w)
+		err := functions.SendStatus("already exists", w, 400)
+		env.Counter.WithLabelValues(r.URL.Path, "400").Inc()
 		if err != nil {
 			logrus.Error(err)
 		}
@@ -60,21 +71,20 @@ func (env *Environment) RegistrationHandle(w http.ResponseWriter, r *http.Reques
 	}
 
 	http.SetCookie(w, cookie)
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-
-	message, err := json.Marshal(ID.String())
+	err := functions.SendStatus(ID.String(), w, 201)
+	env.Counter.WithLabelValues(r.URL.Path, "201").Inc()
 	if err != nil {
 		logrus.Error(err)
 	}
-	w.Write(message)
 }
 
 func (env *Environment) LoginHandle(w http.ResponseWriter, r *http.Request) {
 	authUser := models.Auth{}
-	json.NewDecoder(r.Body).Decode(&authUser)
+	//json.NewDecoder(r.Body).Decode(&authUser)
+	easyjson.UnmarshalFromReader(r.Body, &authUser)
 	if authUser.Password == "" || authUser.Email == "" {
-		err := functions.BadRequest("Не указан E-Mail или пароль", w)
+		err := functions.SendStatus("Не указан E-Mail или пароль", w, 400)
+		env.Counter.WithLabelValues(r.URL.Path, "400").Inc()
 		if err != nil {
 			logrus.Error(err)
 		}
@@ -83,7 +93,8 @@ func (env *Environment) LoginHandle(w http.ResponseWriter, r *http.Request) {
 
 	session := repositories.GetSessionByEmail(env.DB, authUser.Email)
 	if session.ID == "" {
-		err := functions.BadRequest("Неверный E-Mail", w)
+		err := functions.SendStatus("Неверный E-Mail", w, 400)
+		env.Counter.WithLabelValues(r.URL.Path, "400").Inc()
 		if err != nil {
 			logrus.Error(err)
 		}
@@ -92,7 +103,8 @@ func (env *Environment) LoginHandle(w http.ResponseWriter, r *http.Request) {
 	user := repositories.FindUserByID(env.DB, session.ID)
 
 	if user.Password != authUser.Password {
-		err := functions.BadRequest("неверный пароль", w)
+		err := functions.SendStatus("неверный пароль", w, 400)
+		env.Counter.WithLabelValues(r.URL.Path, "400").Inc()
 		if err != nil {
 			logrus.Error(err)
 		}
@@ -106,13 +118,10 @@ func (env *Environment) LoginHandle(w http.ResponseWriter, r *http.Request) {
 		Path:    "/",
 	}
 	http.SetCookie(w, cookie)
-	w.WriteHeader(http.StatusCreated)
-
-	message, err := json.Marshal(session.ID)
+	err := functions.SendStatus(session.ID, w, 201)
 	if err != nil {
 		logrus.Error(err)
 	}
-	w.Write(message)
 }
 
 func (env *Environment) MeHandle(w http.ResponseWriter, r *http.Request) {
@@ -120,26 +129,29 @@ func (env *Environment) MeHandle(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		logrus.Warn("no cookies")
 		w.WriteHeader(http.StatusUnauthorized)
+		env.Counter.WithLabelValues(r.URL.Path, "401").Inc()
 		return
 	}
 	ID := Cookies.Value
 	session := repositories.GetSessionByID(env.DB, ID)
 	if session.ID == "" {
 		w.WriteHeader(http.StatusBadRequest)
+		env.Counter.WithLabelValues(r.URL.Path, "400").Inc()
 		return
 	}
 	user := repositories.FindUserByID(env.DB, session.ID)
-
+	user.Password = "жулик, не воруй"
 	w.WriteHeader(http.StatusCreated)
+	env.Counter.WithLabelValues(r.URL.Path, "201").Inc()
 	w.Header().Set("Content-Type", "application/json")
-	message, err := json.Marshal(user)
+	message, err := easyjson.Marshal(user)
 	if err != nil {
 		logrus.Error(err)
 	}
 	w.Write(message)
 }
 
-func (env *Environment) ScoreboardHandle(w http.ResponseWriter, r *http.Request) {
+func (env *Environment) ScoreboardHandle(w http.ResponseWriter, r *http.Request, ) {
 	numberOfPage := 0
 	countOfString := 3
 
@@ -152,12 +164,14 @@ func (env *Environment) ScoreboardHandle(w http.ResponseWriter, r *http.Request)
 	b := viewmodels.ScoreboardPageViewModel{}
 	b.Scoreboard.Users = scoreboard.Users[:countOfString]
 	b.CanNext = canNext
-	message, err := json.Marshal(b)
+	message, err := easyjson.Marshal(b)
 	if err != nil {
 		logrus.Error(err)
 	}
 	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
 	w.Write(message)
+	env.Counter.WithLabelValues(r.URL.Path, "200").Inc()
 }
 
 func (env *Environment) LogOutHandle(w http.ResponseWriter, r *http.Request) {
@@ -170,22 +184,19 @@ func (env *Environment) LogOutHandle(w http.ResponseWriter, r *http.Request) {
 		Path:    "/",
 	}
 	http.SetCookie(w, cookie)
-
-	w.Header().Set("Content-Type", "application/json")
-	message, err := json.Marshal(id)
+	err := functions.SendStatus(id, w, 201)
+	env.Counter.WithLabelValues(r.URL.Path, "201").Inc()
 	if err != nil {
 		logrus.Error(err)
 	}
-	w.Write(message)
 }
-
 func (env *Environment) AvatarHandle(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
 
-	file, _, err := r.FormFile("image")
+	file, handle, err := r.FormFile("image")
 	if err != nil {
 		logrus.Error(err)
 		return
@@ -199,6 +210,7 @@ func (env *Environment) AvatarHandle(w http.ResponseWriter, r *http.Request) {
 	}
 	fmt.Println(id.Value)
 
+	saveFile(env.DB, w, file, id.Value, handle)
 }
 
 func saveFile(db *gorm.DB, w http.ResponseWriter, file multipart.File, user_id string, handle *multipart.FileHeader) {
@@ -214,10 +226,7 @@ func saveFile(db *gorm.DB, w http.ResponseWriter, file multipart.File, user_id s
 		os.Exit(1)
 	}
 
-	// fmt.Println(pwd)
-	// src := pwd + "/uploads/" + users[user_id].Email + ".jpeg"
 	tmpuser := models.User{}
-	//db.Table("users ").Select("id, email, first_name, last_name, username ").Where("id = ?", tmpuser).Scan(&tmpuser)
 	src := pwd + "/uploads/" + tmpuser.Email + handle.Filename
 
 	err = ioutil.WriteFile(src, data, 0666)
@@ -225,31 +234,31 @@ func saveFile(db *gorm.DB, w http.ResponseWriter, file multipart.File, user_id s
 		logrus.Error(err)
 		return
 	}
-	//tmpuser.Avatar = src
 	db.Table("users ").Select("id, email, first_name, last_name, username, password, score, avatar ").Where("id = ?", user_id).Scan(&tmpuser)
-	//users.Store(user_id, tmpuser)
 	db.Model(&tmpuser).Updates(models.User{Avatar: src}).Where("id = ?", user_id)
-	jsonResponse(w, http.StatusCreated, "File uploaded successfully!.")
-}
-
-func jsonResponse(w http.ResponseWriter, code int, message string) {
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(code)
-	fmt.Fprint(w, message)
+	w.WriteHeader(http.StatusCreated)
+	msg := models.Message{"File uploaded successfully!"}
+	message, err := easyjson.Marshal(msg)
+	if err != nil {
+		logrus.Error(err)
+	}
+	w.Write(message)
 }
 
 func (env *Environment) UpdateHandle(w http.ResponseWriter, r *http.Request) {
 	user := models.User{}
-	json.NewDecoder(r.Body).Decode(&user)
+	//json.NewDecoder(r.Body).Decode(&user)
+	easyjson.UnmarshalFromReader(r.Body, &user)
 	cookies, _ := r.Cookie("sessionid")
 	id := cookies.Value
 	userID := id
-	//fmt.Println(r.MatchString("peach"))
 	session := models.Session{}
 	env.DB.Table("sessions").Select("id, email").Where("email = ?", userID).Scan(&session)
 
 	if session.ID == "" {
-		err := functions.BadRequest("Нет пользователей", w)
+		err := functions.SendStatus("Нет пользователей", w, 400)
+		env.Counter.WithLabelValues(r.URL.Path, "400").Inc()
 		if err != nil {
 			logrus.Error(err)
 		}
@@ -258,34 +267,12 @@ func (env *Environment) UpdateHandle(w http.ResponseWriter, r *http.Request) {
 	env.DB.Table("users ").Select("id, email, first_name, last_name, username, password, score, avatar ").Where("id = ?", userID).Scan(&tmpuser)
 	env.DB.Model(&tmpuser).Updates(models.User{Email: user.Email, FirstName: user.FirstName, LastName: user.LastName, Username: user.Username}).Where("id = ?", userID)
 	env.DB.Save(&tmpuser)
-
-}
-
-/*	Берем данные которые приходят JSON'ом в теле ответа и парсим их в
- *	VKRosonseData добавляем к этому email и все эти данные пушим в проверяя нет ли такого юзера
- *	!!!Проблема: в вк может и не быть email'a, и тогда поле email в базе будет пустым, а оно ключевое
- *	Вариант решения: просить пользователя самому его вводить
- *
- */
-
-const (
-	APP_ID          = "6752650"
-	APP_KEY         = "GUYoUbMgTZpYopPzrO5b"
-	APP_SECRET      = "035ac1d8035ac1d8035ac1d8d4033dc8520035a035ac1d858b7a9b5f658c1e4bdba9b12"
-	API_URL         = "https://api.vk.com/method/users.get?fields=email,photo_50&access_token=%s&v=5.52"
-	API_RedirectURL = "http://127.0.0.1:8000/api/vkauth"
-)
-
-type VKResponseData struct {
-	Response []struct {
-		FirstName string `json:"first_name"`
-		LastName  string `json:"last_name"`
-		Photo     string `json:"photo_100"`
+	err := functions.SendStatus("Successfull", w, 201)
+	env.Counter.WithLabelValues(r.URL.Path, "201").Inc()
+	if err != nil {
+		logrus.Error(err)
 	}
-	Email string
 }
-
-// https://oauth.vk.com/authorize?client_id=6752650&redirect_uri=http://127.0.0.1:8000/api/vkauth&scope=4194306
 
 func (env *Environment) VKRegister(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -327,7 +314,10 @@ func (env *Environment) VKRegister(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := VKResponseData{}
-	json.Unmarshal(body, &data)
+	err = easyjson.Unmarshal(body, &data)
+	if err != nil {
+		fmt.Println(err)
+	}
 	data.Email = email //Теперь из Имени и Фамилии можно сделать Юзернейм и не будет только пароля, но можно добавить токен для валидации
-
+	//TODO
 }

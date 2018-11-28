@@ -2,6 +2,7 @@ package middlewares
 
 import (
 	"2018_2_YetAnotherGame/grpcModules"
+	"GameMS/game"
 	"fmt"
 	"github.com/sirupsen/logrus"
 	"net/http"
@@ -25,7 +26,7 @@ func (ac *AccessLogger) AccessLogMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-func PanicMiddleware(next http.Handler) http.Handler {
+func PanicMiddleware(next http.Handler, m *game.Metrics) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		logrus.Info("panicMiddleware", r.URL.Path)
 		defer func() {
@@ -35,6 +36,7 @@ func PanicMiddleware(next http.Handler) http.Handler {
 			}
 		}()
 		next.ServeHTTP(w, r)
+		//m.Counter.WithLabelValues("rooms").Inc()
 	})
 }
 
