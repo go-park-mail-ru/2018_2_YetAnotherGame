@@ -26,12 +26,20 @@
 
 
 [[constraint]]
-  branch = "master"
-  name = "github.com/FogCreek/mini"
+  name = "github.com/BurntSushi/toml"
+  version = "0.3.1"
+
+[[constraint]]
+  name = "github.com/google/uuid"
+  version = "1.0.0"
 
 [[constraint]]
   name = "github.com/gorilla/mux"
   version = "1.6.2"
+
+[[constraint]]
+  name = "github.com/gorilla/websocket"
+  version = "1.4.0"
 
 [[constraint]]
   name = "github.com/jinzhu/gorm"
@@ -43,7 +51,19 @@
 
 [[constraint]]
   name = "github.com/sirupsen/logrus"
-  version = "1.1.1"
+  version = "1.2.0"
+
+[[constraint]]
+  branch = "master"
+  name = "golang.org/x/net"
+
+[[constraint]]
+  branch = "master"
+  name = "golang.org/x/oauth2"
+
+[[constraint]]
+  name = "google.golang.org/grpc"
+  version = "1.16.0"
 
 [prune]
   go-tests = true
