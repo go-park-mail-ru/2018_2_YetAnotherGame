@@ -42,7 +42,7 @@ func main() {
 
 	env.Counter=prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name:"method_counter",
-		Help:"fffg",
+		Help:"api_status",
 	},
 		[]string{"method", "status"},
 	)

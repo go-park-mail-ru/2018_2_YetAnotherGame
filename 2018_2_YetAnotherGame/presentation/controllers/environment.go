@@ -4,6 +4,7 @@ import (
 
 	"2018_2_YetAnotherGame/presentation/middlewares"
 	"github.com/prometheus/client_golang/prometheus"
+	"google.golang.org/grpc"
 
 	"github.com/jinzhu/gorm"
 	"github.com/sirupsen/logrus"
@@ -13,6 +14,7 @@ type Environment struct {
 	DB  *gorm.DB
 	Log *middlewares.AccessLogger
 	Counter *prometheus.CounterVec
+	Conn *grpc.ClientConn
 }
 
 func (env *Environment) InitDB(dialect, connStr string) {
