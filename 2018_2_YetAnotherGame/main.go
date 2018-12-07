@@ -39,7 +39,7 @@ func main() {
 	env := controllers.Environment{}
 	env.InitLog()
 	env.InitDB("postgres", dbSettings())
-	env.InitGrpc("7777")
+	env.InitGrpc(":7777")
 	env.Counter=prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name:"method_counter",
 		Help:"counter",
@@ -50,8 +50,9 @@ func main() {
 	r = env.Log.AccessLogMiddleware(
 		middlewares.PanicMiddleware(
 			middlewares.CORSMiddleware(
-				r,
-			)),
+		r,
+			),
+			),
 	)
 	http.ListenAndServe(":8000", r)
 }

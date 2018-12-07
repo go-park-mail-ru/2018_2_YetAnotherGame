@@ -9,6 +9,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/cors"
 	"github.com/sirupsen/logrus"
+	"google.golang.org/grpc"
 	"log"
 	"net/http"
 )
@@ -47,7 +48,7 @@ func main() {
 	AccessLogOut := new(middlewares.AccessLogger)
 	c := cors.New(cors.Options{
 		AllowCredentials: true,
-		AllowedOrigins:   []string{"http://127.0.0.1:3001"},                           // All origins
+		AllowedOrigins:   []string{"http://127.0.0.1:3000"},                           // All origins
 		AllowedMethods:   []string{"GET", "HEAD", "POST", "PUT", "OPTIONS", "DELETE"}, // Allowing only get, just an example
 	})
 	g := game.New()
@@ -56,7 +57,11 @@ func main() {
 	routerAuth.HandleFunc("/ws", func(output http.ResponseWriter, request *http.Request) {
 		Test(&met, g, output, request)
 	})
-	authHandler := middlewares.AuthMiddleware(routerAuth)
+	conn, err := grpc.Dial(":7777", grpc.WithInsecure())
+	if err != nil {
+		logrus.Fatalf("did not connect: %s", err)
+	}
+	authHandler := middlewares.AuthMiddleware(routerAuth, conn)
 	router := mux.NewRouter()
 	router.Handle("/metrics", promhttp.Handler())
 	router.Handle("/ws", authHandler)
@@ -64,6 +69,9 @@ func main() {
 		"mode":   "[access_log]",
 		"logger": "LOGRUS",
 	})
+
+
+
 	logrus.SetFormatter(&logrus.JSONFormatter{})
 	AccessLogOut.LogrusLogger = contextLogger
 	siteHandler := AccessLogOut.AccessLogMiddleware(router)
