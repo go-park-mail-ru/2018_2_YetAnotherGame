@@ -1,11 +1,13 @@
 package grpcModules
 
 import (
-	"authorization/api"
+	"2018_2_YetAnotherGame/authorization/api"
+
 	"golang.org/x/net/context"
 	//"fmt"
-	"google.golang.org/grpc"
 	"log"
+
+	"google.golang.org/grpc"
 )
 
 func SendCheckInfo(id string, conn *grpc.ClientConn) string {

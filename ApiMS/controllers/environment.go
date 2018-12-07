@@ -1,8 +1,8 @@
 package controllers
 
 import (
+	"2018_2_YetAnotherGame/ApiMS/middlewares"
 
-	"2018_2_YetAnotherGame/middlewares"
 	"github.com/prometheus/client_golang/prometheus"
 	"google.golang.org/grpc"
 
@@ -11,10 +11,10 @@ import (
 )
 
 type Environment struct {
-	DB  *gorm.DB
-	Log *middlewares.AccessLogger
+	DB      *gorm.DB
+	Log     *middlewares.AccessLogger
 	Counter *prometheus.CounterVec
-	Conn *grpc.ClientConn
+	Conn    *grpc.ClientConn
 }
 
 func (env *Environment) InitDB(dialect, connStr string) {
@@ -33,7 +33,6 @@ func (env *Environment) InitGrpc(port string) {
 
 	env.Conn = conn
 }
-
 
 func (env *Environment) InitLog() {
 	logrus.SetFormatter(&logrus.TextFormatter{DisableColors: true})

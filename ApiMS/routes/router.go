@@ -1,18 +1,16 @@
 package routes
 
 import (
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"net/http"
 
-	"2018_2_YetAnotherGame/controllers"
-	"2018_2_YetAnotherGame/middlewares"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+
+	"2018_2_YetAnotherGame/ApiMS/controllers"
+	"2018_2_YetAnotherGame/ApiMS/middlewares"
 
 	"github.com/gorilla/mux"
 	"github.com/prometheus/client_golang/prometheus"
 )
-
-
-
 
 func Router(env *controllers.Environment) http.Handler {
 	prometheus.MustRegister(env.Counter)

@@ -1,12 +1,13 @@
 package main
 
 import (
-	"2018_2_YetAnotherGame/controllers"
-	"2018_2_YetAnotherGame/middlewares"
-	"2018_2_YetAnotherGame/routes"
+	"2018_2_YetAnotherGame/ApiMS/controllers"
+	"2018_2_YetAnotherGame/ApiMS/middlewares"
+	"2018_2_YetAnotherGame/ApiMS/routes"
 	"fmt"
-	"github.com/prometheus/client_golang/prometheus"
 	"net/http"
+
+	"github.com/prometheus/client_golang/prometheus"
 
 	"github.com/BurntSushi/toml"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
@@ -40,9 +41,9 @@ func main() {
 	env.InitLog()
 	env.InitDB("postgres", dbSettings())
 	env.InitGrpc("7777")
-	env.Counter=prometheus.NewCounterVec(prometheus.CounterOpts{
-		Name:"method_counter",
-		Help:"counter",
+	env.Counter = prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: "method_counter",
+		Help: "counter",
 	},
 		[]string{"method", "status"},
 	)

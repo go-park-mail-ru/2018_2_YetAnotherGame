@@ -1,16 +1,17 @@
 package middlewares
 
 import (
-	"2018_2_YetAnotherGame/grpcModules"
-	"2018_2_YetAnotherGame/infostructures/functions"
+	"2018_2_YetAnotherGame/ApiMS/grpcModules"
+	"2018_2_YetAnotherGame/ApiMS/infostructures/functions"
 	"fmt"
+	"net/http"
+
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
-	"net/http"
 )
 
 func AuthMiddleware(next http.Handler, conn *grpc.ClientConn) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request){
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		logrus.Info("authMiddleware", r.URL.Path)
 		session, err := r.Cookie("sessionid")
 		if err != nil {
@@ -22,9 +23,9 @@ func AuthMiddleware(next http.Handler, conn *grpc.ClientConn) http.Handler {
 			return
 		}
 		id := session.Value
-		status:=grpcModules.SendCheckInfo(id, conn)
+		status := grpcModules.SendCheckInfo(id, conn)
 		fmt.Println(status)
-		if status=="Unauthorized"{
+		if status == "Unauthorized" {
 			logrus.Info("Unauthorized")
 			return
 		}

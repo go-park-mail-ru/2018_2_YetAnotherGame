@@ -1,9 +1,10 @@
 package functions
 
 import (
-	"2018_2_YetAnotherGame/resources/models"
-	"github.com/mailru/easyjson"
+	"2018_2_YetAnotherGame/ApiMS/resources/models"
 	"net/http"
+
+	"github.com/mailru/easyjson"
 )
 
 func SendStatus(mes string, w http.ResponseWriter, header int) error {
@@ -17,4 +18,3 @@ func SendStatus(mes string, w http.ResponseWriter, header int) error {
 	w.Write(message)
 	return nil
 }
-

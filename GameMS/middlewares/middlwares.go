@@ -1,12 +1,13 @@
 package middlewares
 
 import (
-	"2018_2_YetAnotherGame/grpcModules"
-	"GameMS/game"
+	"2018_2_YetAnotherGame/ApiMS/grpcModules"
+	"2018_2_YetAnotherGame/GameMS/game"
 	"fmt"
-	"github.com/sirupsen/logrus"
 	"net/http"
 	"time"
+
+	"github.com/sirupsen/logrus"
 )
 
 type AccessLogger struct {

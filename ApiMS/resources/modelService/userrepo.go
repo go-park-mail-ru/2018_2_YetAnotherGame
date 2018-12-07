@@ -1,7 +1,7 @@
 package modelService
 
 import (
-	"2018_2_YetAnotherGame/resources/models"
+	"2018_2_YetAnotherGame/ApiMS/resources/models"
 
 	"github.com/jinzhu/gorm"
 )

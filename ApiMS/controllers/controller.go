@@ -1,12 +1,11 @@
 package controllers
 
 import (
-	"2018_2_YetAnotherGame/resources/models"
-	"2018_2_YetAnotherGame/resources/modelService"
+	"2018_2_YetAnotherGame/ApiMS/infostructures/functions"
+	"2018_2_YetAnotherGame/ApiMS/resources/modelService"
+	"2018_2_YetAnotherGame/ApiMS/resources/models"
 
-	"2018_2_YetAnotherGame/infostructures/functions"
 	"fmt"
-	"github.com/mailru/easyjson"
 	"io/ioutil"
 	"log"
 	"mime/multipart"
@@ -14,6 +13,8 @@ import (
 	"os"
 	"strconv"
 	"time"
+
+	"github.com/mailru/easyjson"
 
 	"github.com/google/uuid"
 	"github.com/jinzhu/gorm"
@@ -151,7 +152,7 @@ func (env *Environment) MeHandle(w http.ResponseWriter, r *http.Request) {
 	w.Write(message)
 }
 
-func (env *Environment) ScoreboardHandle(w http.ResponseWriter, r *http.Request, ) {
+func (env *Environment) ScoreboardHandle(w http.ResponseWriter, r *http.Request) {
 	numberOfPage := 0
 	countOfString := 3
 
