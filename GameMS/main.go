@@ -6,9 +6,6 @@ import (
 	"log"
 	"net/http"
 
-	"log"
-	"net/http"
-
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 	"github.com/prometheus/client_golang/prometheus"

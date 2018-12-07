@@ -9,8 +9,6 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
-
-	"github.com/sirupsen/logrus"
 )
 
 type AccessLogger struct {
