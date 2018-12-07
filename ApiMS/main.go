@@ -52,7 +52,8 @@ func main() {
 		middlewares.PanicMiddleware(
 			middlewares.CORSMiddleware(
 				r,
-			)),
+			),
+		),
 	)
 	http.ListenAndServe(":8000", r)
 }

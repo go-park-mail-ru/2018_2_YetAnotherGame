@@ -1,7 +1,9 @@
 package room
 
 import (
+	"GameMS/Collision"
 	"encoding/json"
+	"fmt"
 	"github.com/google/uuid"
 	"time"
 )
@@ -26,10 +28,13 @@ type NewPlayer struct {
 	Username string `json:"username"`
 }
 type NewScore struct {
-
+	User string `json:"user"`
 	Score string `json:"score"`
 	X string `json:"x"`
 	Y string `json:"y"`
+	CollisionX string `json:"xblock"`
+	CollisionX2 string `json:"x2block"`
+	CollisionY string `json:"yblock"`
 }
 
 type State struct {
@@ -68,6 +73,9 @@ type Message struct {
 	Author string `json:"author"`
 	Message string `json:"message"`
 }
+//type ColDetect struct {
+//	Collision string `json:"collision"`
+//}
 func (r *Room) ListenToPlayers() {
 	for {
 		m := <-r.Message
@@ -84,6 +92,16 @@ func (r *Room) ListenToPlayers() {
 			m.Player.Data.Score = ns.Score
 			m.Player.Data.Position.X=ns.X
 			m.Player.Data.Position.Y=ns.Y
+			ok:=Collision.Collision(ns.X, ns.Y,ns.CollisionX,ns.CollisionY, ns.CollisionX2)
+			if ok{
+				//name:=[]PlayerData{}
+				col:=Message{Message:"Collision", Author:ns.User}
+				//us:=PlayerData{Username:ns.User}
+				//name=append(name,us)
+				fmt.Println("coll")
+				state:=State{Message:&col}
+				r.Broadcast <- &state
+			}
 		case "Chat":
 			//log.Printf("rmessage %s %v", m.Player.ID, string(m.Payload))
 			msg := &Message{}

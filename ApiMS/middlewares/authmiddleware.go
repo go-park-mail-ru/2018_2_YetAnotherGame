@@ -2,7 +2,6 @@ package middlewares
 
 import (
 	"2018_2_YetAnotherGame/ApiMS/grpcModules"
-	"2018_2_YetAnotherGame/ApiMS/infostructures/functions"
 	"fmt"
 	"net/http"
 
@@ -16,10 +15,10 @@ func AuthMiddleware(next http.Handler, conn *grpc.ClientConn) http.Handler {
 		session, err := r.Cookie("sessionid")
 		if err != nil {
 			logrus.Info("Unauthorized")
-			err := functions.SendStatus("Unauthorized", w, http.StatusUnauthorized)
-			if err != nil {
-				logrus.Error(err)
-			}
+			//err := functions.SendStatus("Unauthorized", w, http.StatusUnauthorized)
+			//if err != nil {
+			//	logrus.Error(err)
+			//}
 			return
 		}
 		id := session.Value
