@@ -191,6 +191,7 @@ func (env *Environment) LogOutHandle(w http.ResponseWriter, r *http.Request) {
 		logrus.Error(err)
 	}
 }
+
 func (env *Environment) AvatarHandle(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
@@ -228,6 +229,7 @@ func saveFile(db *gorm.DB, w http.ResponseWriter, file multipart.File, user_id s
 	}
 
 	tmpuser := models.User{}
+	db.Table("users ").Select("id, email, first_name, last_name, username, password, score, avatar ").Where("id = ?", user_id).Scan(&tmpuser)
 	src := pwd + "/uploads/" + tmpuser.Email + handle.Filename
 
 	err = ioutil.WriteFile(src, data, 0666)
@@ -235,7 +237,6 @@ func saveFile(db *gorm.DB, w http.ResponseWriter, file multipart.File, user_id s
 		logrus.Error(err)
 		return
 	}
-	db.Table("users ").Select("id, email, first_name, last_name, username, password, score, avatar ").Where("id = ?", user_id).Scan(&tmpuser)
 	db.Model(&tmpuser).Updates(models.User{Avatar: src}).Where("id = ?", user_id)
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)

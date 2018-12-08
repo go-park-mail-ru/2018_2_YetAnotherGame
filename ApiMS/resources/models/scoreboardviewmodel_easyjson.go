@@ -17,7 +17,7 @@ var (
 	_ easyjson.Marshaler
 )
 
-func easyjson97068512Decode20182YetAnotherGameDomainViewmodels(in *jlexer.Lexer, out *ScoreboardPageViewModel) {
+func easyjson97068512Decode20182YetAnotherGameApiMSResourcesModels(in *jlexer.Lexer, out *ScoreboardPageViewModel) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -50,7 +50,7 @@ func easyjson97068512Decode20182YetAnotherGameDomainViewmodels(in *jlexer.Lexer,
 		in.Consumed()
 	}
 }
-func easyjson97068512Encode20182YetAnotherGameDomainViewmodels(out *jwriter.Writer, in ScoreboardPageViewModel) {
+func easyjson97068512Encode20182YetAnotherGameApiMSResourcesModels(out *jwriter.Writer, in ScoreboardPageViewModel) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -80,23 +80,23 @@ func easyjson97068512Encode20182YetAnotherGameDomainViewmodels(out *jwriter.Writ
 // MarshalJSON supports json.Marshaler interface
 func (v ScoreboardPageViewModel) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson97068512Encode20182YetAnotherGameDomainViewmodels(&w, v)
+	easyjson97068512Encode20182YetAnotherGameApiMSResourcesModels(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v ScoreboardPageViewModel) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson97068512Encode20182YetAnotherGameDomainViewmodels(w, v)
+	easyjson97068512Encode20182YetAnotherGameApiMSResourcesModels(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *ScoreboardPageViewModel) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson97068512Decode20182YetAnotherGameDomainViewmodels(&r, v)
+	easyjson97068512Decode20182YetAnotherGameApiMSResourcesModels(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *ScoreboardPageViewModel) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson97068512Decode20182YetAnotherGameDomainViewmodels(l, v)
+	easyjson97068512Decode20182YetAnotherGameApiMSResourcesModels(l, v)
 }

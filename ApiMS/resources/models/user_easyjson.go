@@ -17,7 +17,7 @@ var (
 	_ easyjson.Marshaler
 )
 
-func easyjson9e1087fdDecode20182YetAnotherGameDomainModels(in *jlexer.Lexer, out *User) {
+func easyjson9e1087fdDecode20182YetAnotherGameApiMSResourcesModels(in *jlexer.Lexer, out *User) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -50,7 +50,7 @@ func easyjson9e1087fdDecode20182YetAnotherGameDomainModels(in *jlexer.Lexer, out
 			out.Password = string(in.String())
 		case "score":
 			out.Score = int(in.Int())
-		case "photo_100":
+		case "avatar":
 			out.Avatar = string(in.String())
 		default:
 			in.SkipRecursive()
@@ -62,7 +62,7 @@ func easyjson9e1087fdDecode20182YetAnotherGameDomainModels(in *jlexer.Lexer, out
 		in.Consumed()
 	}
 }
-func easyjson9e1087fdEncode20182YetAnotherGameDomainModels(out *jwriter.Writer, in User) {
+func easyjson9e1087fdEncode20182YetAnotherGameApiMSResourcesModels(out *jwriter.Writer, in User) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -137,7 +137,7 @@ func easyjson9e1087fdEncode20182YetAnotherGameDomainModels(out *jwriter.Writer, 
 		out.Int(int(in.Score))
 	}
 	{
-		const prefix string = ",\"photo_100\":"
+		const prefix string = ",\"avatar\":"
 		if first {
 			first = false
 			out.RawString(prefix[1:])
@@ -152,23 +152,23 @@ func easyjson9e1087fdEncode20182YetAnotherGameDomainModels(out *jwriter.Writer, 
 // MarshalJSON supports json.Marshaler interface
 func (v User) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson9e1087fdEncode20182YetAnotherGameDomainModels(&w, v)
+	easyjson9e1087fdEncode20182YetAnotherGameApiMSResourcesModels(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v User) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson9e1087fdEncode20182YetAnotherGameDomainModels(w, v)
+	easyjson9e1087fdEncode20182YetAnotherGameApiMSResourcesModels(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *User) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson9e1087fdDecode20182YetAnotherGameDomainModels(&r, v)
+	easyjson9e1087fdDecode20182YetAnotherGameApiMSResourcesModels(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *User) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson9e1087fdDecode20182YetAnotherGameDomainModels(l, v)
+	easyjson9e1087fdDecode20182YetAnotherGameApiMSResourcesModels(l, v)
 }

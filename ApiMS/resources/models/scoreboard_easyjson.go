@@ -17,7 +17,7 @@ var (
 	_ easyjson.Marshaler
 )
 
-func easyjsonF2f895aDecode20182YetAnotherGameDomainModels(in *jlexer.Lexer, out *Scoreboard) {
+func easyjsonF2f895aDecode20182YetAnotherGameApiMSResourcesModels(in *jlexer.Lexer, out *Scoreboard) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -53,7 +53,7 @@ func easyjsonF2f895aDecode20182YetAnotherGameDomainModels(in *jlexer.Lexer, out 
 				}
 				for !in.IsDelim(']') {
 					var v1 User
-					easyjsonF2f895aDecode20182YetAnotherGameDomainModels1(in, &v1)
+					(v1).UnmarshalEasyJSON(in)
 					out.Users = append(out.Users, v1)
 					in.WantComma()
 				}
@@ -69,7 +69,7 @@ func easyjsonF2f895aDecode20182YetAnotherGameDomainModels(in *jlexer.Lexer, out 
 		in.Consumed()
 	}
 }
-func easyjsonF2f895aEncode20182YetAnotherGameDomainModels(out *jwriter.Writer, in Scoreboard) {
+func easyjsonF2f895aEncode20182YetAnotherGameApiMSResourcesModels(out *jwriter.Writer, in Scoreboard) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -89,7 +89,7 @@ func easyjsonF2f895aEncode20182YetAnotherGameDomainModels(out *jwriter.Writer, i
 				if v2 > 0 {
 					out.RawByte(',')
 				}
-				easyjsonF2f895aEncode20182YetAnotherGameDomainModels1(out, v3)
+				(v3).MarshalEasyJSON(out)
 			}
 			out.RawByte(']')
 		}
@@ -100,154 +100,23 @@ func easyjsonF2f895aEncode20182YetAnotherGameDomainModels(out *jwriter.Writer, i
 // MarshalJSON supports json.Marshaler interface
 func (v Scoreboard) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjsonF2f895aEncode20182YetAnotherGameDomainModels(&w, v)
+	easyjsonF2f895aEncode20182YetAnotherGameApiMSResourcesModels(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v Scoreboard) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjsonF2f895aEncode20182YetAnotherGameDomainModels(w, v)
+	easyjsonF2f895aEncode20182YetAnotherGameApiMSResourcesModels(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *Scoreboard) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjsonF2f895aDecode20182YetAnotherGameDomainModels(&r, v)
+	easyjsonF2f895aDecode20182YetAnotherGameApiMSResourcesModels(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *Scoreboard) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjsonF2f895aDecode20182YetAnotherGameDomainModels(l, v)
-}
-func easyjsonF2f895aDecode20182YetAnotherGameDomainModels1(in *jlexer.Lexer, out *User) {
-	isTopLevel := in.IsStart()
-	if in.IsNull() {
-		if isTopLevel {
-			in.Consumed()
-		}
-		in.Skip()
-		return
-	}
-	in.Delim('{')
-	for !in.IsDelim('}') {
-		key := in.UnsafeString()
-		in.WantColon()
-		if in.IsNull() {
-			in.Skip()
-			in.WantComma()
-			continue
-		}
-		switch key {
-		case "ID":
-			out.ID = string(in.String())
-		case "email":
-			out.Email = string(in.String())
-		case "first_name":
-			out.FirstName = string(in.String())
-		case "last_name":
-			out.LastName = string(in.String())
-		case "username":
-			out.Username = string(in.String())
-		case "password":
-			out.Password = string(in.String())
-		case "score":
-			out.Score = int(in.Int())
-		case "photo_100":
-			out.Avatar = string(in.String())
-		default:
-			in.SkipRecursive()
-		}
-		in.WantComma()
-	}
-	in.Delim('}')
-	if isTopLevel {
-		in.Consumed()
-	}
-}
-func easyjsonF2f895aEncode20182YetAnotherGameDomainModels1(out *jwriter.Writer, in User) {
-	out.RawByte('{')
-	first := true
-	_ = first
-	{
-		const prefix string = ",\"ID\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
-		out.String(string(in.ID))
-	}
-	{
-		const prefix string = ",\"email\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
-		out.String(string(in.Email))
-	}
-	{
-		const prefix string = ",\"first_name\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
-		out.String(string(in.FirstName))
-	}
-	{
-		const prefix string = ",\"last_name\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
-		out.String(string(in.LastName))
-	}
-	{
-		const prefix string = ",\"username\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
-		out.String(string(in.Username))
-	}
-	{
-		const prefix string = ",\"password\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
-		out.String(string(in.Password))
-	}
-	{
-		const prefix string = ",\"score\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
-		out.Int(int(in.Score))
-	}
-	{
-		const prefix string = ",\"photo_100\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
-		out.String(string(in.Avatar))
-	}
-	out.RawByte('}')
+	easyjsonF2f895aDecode20182YetAnotherGameApiMSResourcesModels(l, v)
 }
