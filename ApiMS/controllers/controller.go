@@ -8,16 +8,13 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"mime/multipart"
 	"net/http"
-	"os"
 	"strconv"
 	"time"
 
 	"github.com/mailru/easyjson"
 
 	"github.com/google/uuid"
-	"github.com/jinzhu/gorm"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/vk"
@@ -190,62 +187,6 @@ func (env *Environment) LogOutHandle(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		logrus.Error(err)
 	}
-}
-
-func (env *Environment) AvatarHandle(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Redirect(w, r, "/", http.StatusSeeOther)
-		return
-	}
-
-	file, handle, err := r.FormFile("image")
-	if err != nil {
-		logrus.Error(err)
-		return
-	}
-	defer file.Close()
-
-	id, err := r.Cookie("sessionid")
-	if err != nil {
-		logrus.Error(err)
-		return
-	}
-	fmt.Println(id.Value)
-
-	saveFile(env.DB, w, file, id.Value, handle)
-}
-
-func saveFile(db *gorm.DB, w http.ResponseWriter, file multipart.File, user_id string, handle *multipart.FileHeader) {
-	data, err := ioutil.ReadAll(file)
-	if err != nil {
-		logrus.Error(err)
-		return
-	}
-
-	pwd, err := os.Getwd()
-	if err != nil {
-		logrus.Error(err)
-		os.Exit(1)
-	}
-
-	tmpuser := models.User{}
-	db.Table("users ").Select("id, email, first_name, last_name, username, password, score, avatar ").Where("id = ?", user_id).Scan(&tmpuser)
-	src := pwd + "/uploads/" + tmpuser.Email + handle.Filename
-
-	err = ioutil.WriteFile(src, data, 0666)
-	if err != nil {
-		logrus.Error(err)
-		return
-	}
-	db.Model(&tmpuser).Updates(models.User{Avatar: src}).Where("id = ?", user_id)
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	msg := models.Message{"File uploaded successfully!"}
-	message, err := easyjson.Marshal(msg)
-	if err != nil {
-		logrus.Error(err)
-	}
-	w.Write(message)
 }
 
 func (env *Environment) UpdateHandle(w http.ResponseWriter, r *http.Request) {
