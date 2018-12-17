@@ -10,7 +10,8 @@ script:
 - echo "hi"
 - go get -u github.com/alecthomas/gometalinter
 - gometalinter --install
-- ls ../../
+- cd ../../
+- pwd
 - gometalinter ../src/2018_2_YetAnotherGame/ApiMS/controllers/
 before_install:
 - openssl aes-256-cbc -K $encrypted_43b03c082b97_key -iv $encrypted_43b03c082b97_iv
