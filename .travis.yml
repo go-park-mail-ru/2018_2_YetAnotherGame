@@ -3,8 +3,7 @@ branches:
   - master
   - dev
   - travis
-language: go
-node_js:
+go:
 - 1.11.x
 script:
 - echo "hi"

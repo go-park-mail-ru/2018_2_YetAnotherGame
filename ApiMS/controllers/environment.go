@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"github.com/2018_2_YetAnotherGame/ApiMS/middlewares"
+	"github.com/go-park-mail-ru/2018_2_YetAnotherGame/ApiMS/middlewares"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"google.golang.org/grpc"

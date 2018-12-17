@@ -1,7 +1,7 @@
 package functions
 
 import (
-	"github.com/2018_2_YetAnotherGame/ApiMS/resources/models"
+	"github.com/go-park-mail-ru/2018_2_YetAnotherGame/ApiMS/resources/models"
 	"net/http"
 
 	"github.com/mailru/easyjson"

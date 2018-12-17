@@ -1,7 +1,7 @@
 package middlewares
 
 import (
-	"github.com/2018_2_YetAnotherGame/ApiMS/grpcModules"
+	"github.com/go-park-mail-ru/2018_2_YetAnotherGame/ApiMS/grpcModules"
 	"fmt"
 	"net/http"
 

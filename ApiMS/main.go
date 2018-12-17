@@ -1,9 +1,9 @@
 package main
 
 import (
-	"github.com/2018_2_YetAnotherGame/ApiMS/controllers"
-	"github.com/2018_2_YetAnotherGame/ApiMS/middlewares"
-	"github.com/2018_2_YetAnotherGame/ApiMS/routes"
+	"github.com/go-park-mail-ru/2018_2_YetAnotherGame/ApiMS/controllers"
+	"github.com/go-park-mail-ru/2018_2_YetAnotherGame/ApiMS/middlewares"
+	"github.com/go-park-mail-ru/2018_2_YetAnotherGame/ApiMS/routes"
 	"fmt"
 	"net/http"
 

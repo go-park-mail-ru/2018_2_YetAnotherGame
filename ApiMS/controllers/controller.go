@@ -1,9 +1,9 @@
 package controllers
 
 import (
-	"github.com/2018_2_YetAnotherGame/ApiMS/infostructures/functions"
-	"github.com/2018_2_YetAnotherGame/ApiMS/resources/modelService"
-	"github.com/2018_2_YetAnotherGame/ApiMS/resources/models"
+	"github.com/go-park-mail-ru/2018_2_YetAnotherGame/ApiMS/infostructures/functions"
+	"github.com/go-park-mail-ru/2018_2_YetAnotherGame/ApiMS/resources/modelService"
+	"github.com/go-park-mail-ru/2018_2_YetAnotherGame/ApiMS/resources/models"
 
 	"fmt"
 	"io/ioutil"
