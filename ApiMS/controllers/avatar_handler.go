@@ -6,8 +6,8 @@ import (
 	"mime/multipart"
 	"net/http"
 
-	"2018_2_YetAnotherGame/ApiMS/infostructures/functions"
-	"2018_2_YetAnotherGame/ApiMS/resources/models"
+	"github.com/2018_2_YetAnotherGame/ApiMS/infostructures/functions"
+	"github.com/2018_2_YetAnotherGame/ApiMS/resources/models"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awsutil"

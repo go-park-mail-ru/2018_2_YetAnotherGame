@@ -5,8 +5,8 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
-	"2018_2_YetAnotherGame/ApiMS/controllers"
-	"2018_2_YetAnotherGame/ApiMS/middlewares"
+	"github.com/2018_2_YetAnotherGame/ApiMS/controllers"
+	"github.com/2018_2_YetAnotherGame/ApiMS/middlewares"
 
 	"github.com/gorilla/mux"
 	"github.com/prometheus/client_golang/prometheus"

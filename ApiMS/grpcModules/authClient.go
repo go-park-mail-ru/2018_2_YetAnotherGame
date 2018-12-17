@@ -1,7 +1,7 @@
 package grpcModules
 
 import (
-	"2018_2_YetAnotherGame/authorization/api"
+	"github.com/2018_2_YetAnotherGame/authorization/api"
 
 	"golang.org/x/net/context"
 	//"fmt"
