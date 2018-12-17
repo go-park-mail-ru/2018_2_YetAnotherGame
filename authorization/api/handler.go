@@ -1,7 +1,7 @@
 package api
 
 import (
-	"2018_2_YetAnotherGame/ApiMS/resources/models"
+	"github.com/go-park-mail-ru/2018_2_YetAnotherGame/ApiMS/resources/models"
 	"fmt"
 	"log"
 

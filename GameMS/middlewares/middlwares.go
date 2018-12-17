@@ -1,8 +1,8 @@
 package middlewares
 
 import (
-	"2018_2_YetAnotherGame/ApiMS/grpcModules"
-	"2018_2_YetAnotherGame/GameMS/game"
+	"github.com/go-park-mail-ru/2018_2_YetAnotherGame/ApiMS/grpcModules"
+	"github.com/go-park-mail-ru/2018_2_YetAnotherGame/GameMS/game"
 	"fmt"
 	"net/http"
 	"time"

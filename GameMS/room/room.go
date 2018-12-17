@@ -1,7 +1,7 @@
 package room
 
 import (
-	"2018_2_YetAnotherGame/GameMS/Collision"
+	"github.com/go-park-mail-ru/2018_2_YetAnotherGame/GameMS/Collision"
 	"encoding/json"
 	"fmt"
 	"time"

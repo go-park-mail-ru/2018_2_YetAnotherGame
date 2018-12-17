@@ -1,8 +1,8 @@
 package main
 
 import (
-	"2018_2_YetAnotherGame/GameMS/game"
-	"2018_2_YetAnotherGame/GameMS/middlewares"
+	"github.com/go-park-mail-ru/2018_2_YetAnotherGame/GameMS/game"
+	"github.com/go-park-mail-ru/2018_2_YetAnotherGame/GameMS/middlewares"
 	"log"
 	"net/http"
 

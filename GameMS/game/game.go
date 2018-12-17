@@ -1,7 +1,7 @@
 package game
 
 import (
-	"2018_2_YetAnotherGame/GameMS/room"
+	"github.com/go-park-mail-ru/2018_2_YetAnotherGame/GameMS/room"
 	"fmt"
 	"log"
 
