@@ -3,10 +3,13 @@ branches:
   - master
   - dev
   - travis
+language: go
 go:
 - 1.11.x
+go_import_path: github.com/go-park-mail-ru/2018_2_YetAnotherGame
 script:
 - echo "hi"
+- go env GOPATH
 - go get -u github.com/alecthomas/gometalinter
 - gometalinter --install
 - cd /home/travis/gopath/src/github.com/alecthomas/
