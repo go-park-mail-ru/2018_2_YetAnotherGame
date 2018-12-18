@@ -24,6 +24,7 @@ script:
 - gometalinter --config=/home/travis/gopath/src/github.com/go-park-mail-ru/2018_2_YetAnotherGame/.gometalinter.json ../go-park-mail-ru/2018_2_YetAnotherGame/GameMS/room || true
 - gometalinter --config=/home/travis/gopath/src/github.com/go-park-mail-ru/2018_2_YetAnotherGame/.gometalinter.json ../go-park-mail-ru/2018_2_YetAnotherGame/GameMS/game || true
 - scp -r -i /home/travis/gopath/src/github.com/go-park-mail-ru/2018_2_YetAnotherGame/2018_2_YetAnotherGame_id_rsa.pem /home/travis/gopath/src/github.com/go-park-mail-ru/2018_2_YetAnotherGame ubuntu@95.163.215.234:/home/ubuntu/go/src/2018_2_YetAnotherGame
+- screen -ls | grep pts | cut -d. -f1 | awk '{print $1}' | xargs kill
 - screen go run /home/travis/gopath/src/github.com/go-park-mail-ru/2018_2_YetAnotherGame/ApiMS/main.go
 - screen go run /home/travis/gopath/src/github.com/go-park-mail-ru/2018_2_YetAnotherGame/GameMS/main.go
 - screen go run /home/travis/gopath/src/github.com/go-park-mail-ru/2018_2_YetAnotherGame/authorization/server/main.go
