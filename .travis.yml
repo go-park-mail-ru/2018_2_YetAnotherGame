@@ -14,7 +14,7 @@ script:
 - go get -u github.com/alecthomas/gometalinter
 - gometalinter --install
 - cd /home/travis/gopath/src/github.com/alecthomas/
-- gometalinter --config=github.com/go-park-mail-ru/2018_2_YetAnotherGame/.gometalinter.json ../go-park-mail-ru/2018_2_YetAnotherGame/ApiMS/controllers/
+- gometalinter --config=/home/travis/gopath/src/github.com/go-park-mail-ru/2018_2_YetAnotherGame/.gometalinter.json ../go-park-mail-ru/2018_2_YetAnotherGame/ApiMS/controllers/
 before_install:
 - openssl aes-256-cbc -K $encrypted_43b03c082b97_key -iv $encrypted_43b03c082b97_iv
   -in 2018_2_YetAnotherGame_id_rsa.pem.enc -out ./2018_2_YetAnotherGame_id_rsa.pem
