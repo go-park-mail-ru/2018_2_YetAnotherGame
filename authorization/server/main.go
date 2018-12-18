@@ -3,7 +3,7 @@ import (
   "fmt"
   "log"
   "net"
-  "../api"
+  "github.com/go-park-mail-ru/2018_2_YetAnotherGame/authorization/api"
   "google.golang.org/grpc"
 
 )
