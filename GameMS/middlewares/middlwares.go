@@ -1,12 +1,14 @@
 package middlewares
 
 import (
-	"2018_2_YetAnotherGame/grpcModules"
-	"GameMS/game"
+	"github.com/go-park-mail-ru/2018_2_YetAnotherGame/ApiMS/grpcModules"
+	"github.com/go-park-mail-ru/2018_2_YetAnotherGame/GameMS/game"
 	"fmt"
-	"github.com/sirupsen/logrus"
 	"net/http"
 	"time"
+
+	"github.com/sirupsen/logrus"
+	"google.golang.org/grpc"
 )
 
 type AccessLogger struct {
@@ -40,7 +42,7 @@ func PanicMiddleware(next http.Handler, m *game.Metrics) http.Handler {
 	})
 }
 
-func AuthMiddleware(next http.Handler) http.Handler {
+func AuthMiddleware(next http.Handler, conn *grpc.ClientConn) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("auth")
 		logrus.Info("authMiddleware", r.URL.Path)
@@ -52,7 +54,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 		}
 		id := session.Value
 
-		status := grpcModules.SendCheckInfo(id)
+		status := grpcModules.SendCheckInfo(id, conn)
 		fmt.Println(status)
 		if status == "Unauthorized" {
 			logrus.Info("Unauthorized")

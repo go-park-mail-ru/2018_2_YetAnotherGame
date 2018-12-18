@@ -1,0 +1,34 @@
+branches:
+  only:
+  - master
+  - dev
+  - travis
+language: go
+go:
+- 1.11.x
+ignore:
+- go-park-mail-ru/2018_2_YetAnotherGame/vendor/*
+script:
+- chmod 600 ./2018_2_YetAnotherGame_id_rsa.pem
+- ssh-keyscan -H 95.163.215.234 >> ~/.ssh/known_hosts
+- go get -u github.com/alecthomas/gometalinter
+- gometalinter --install
+- cd /home/travis/gopath/src/github.com/alecthomas/
+- gometalinter --config=/home/travis/gopath/src/github.com/go-park-mail-ru/2018_2_YetAnotherGame/.gometalinter.json ../go-park-mail-ru/2018_2_YetAnotherGame/ApiMS/grpcModules/ || true
+- gometalinter --config=/home/travis/gopath/src/github.com/go-park-mail-ru/2018_2_YetAnotherGame/.gometalinter.json ../go-park-mail-ru/2018_2_YetAnotherGame/ApiMS/infostructures/ || true
+- gometalinter --config=/home/travis/gopath/src/github.com/go-park-mail-ru/2018_2_YetAnotherGame/.gometalinter.json ../go-park-mail-ru/2018_2_YetAnotherGame/ApiMS/middlewares/ || true
+- gometalinter --config=/home/travis/gopath/src/github.com/go-park-mail-ru/2018_2_YetAnotherGame/.gometalinter.json ../go-park-mail-ru/2018_2_YetAnotherGame/ApiMS/resources/ || true
+- gometalinter --config=/home/travis/gopath/src/github.com/go-park-mail-ru/2018_2_YetAnotherGame/.gometalinter.json ../go-park-mail-ru/2018_2_YetAnotherGame/ApiMS/routes/ || true
+- gometalinter --config=/home/travis/gopath/src/github.com/go-park-mail-ru/2018_2_YetAnotherGame/.gometalinter.json ../go-park-mail-ru/2018_2_YetAnotherGame/ApiMS/ || true
+- gometalinter --config=/home/travis/gopath/src/github.com/go-park-mail-ru/2018_2_YetAnotherGame/.gometalinter.json ../go-park-mail-ru/2018_2_YetAnotherGame/GameMS/ || true
+- gometalinter --config=/home/travis/gopath/src/github.com/go-park-mail-ru/2018_2_YetAnotherGame/.gometalinter.json ../go-park-mail-ru/2018_2_YetAnotherGame/GameMS/room || true
+- gometalinter --config=/home/travis/gopath/src/github.com/go-park-mail-ru/2018_2_YetAnotherGame/.gometalinter.json ../go-park-mail-ru/2018_2_YetAnotherGame/GameMS/game || true
+- scp -r -i /home/travis/gopath/src/github.com/go-park-mail-ru/2018_2_YetAnotherGame/2018_2_YetAnotherGame_id_rsa.pem /home/travis/gopath/src/github.com/go-park-mail-ru/2018_2_YetAnotherGame ubuntu@95.163.215.234:/home/ubuntu/go/src/2018_2_YetAnotherGame
+- screen go run /home/travis/gopath/src/github.com/go-park-mail-ru/2018_2_YetAnotherGame/ApiMS/main.go
+- screen go run /home/travis/gopath/src/github.com/go-park-mail-ru/2018_2_YetAnotherGame/GameMS/main.go
+- screen go run /home/travis/gopath/src/github.com/go-park-mail-ru/2018_2_YetAnotherGame/authorization/server/main.go
+before_install:
+- openssl aes-256-cbc -K $encrypted_43b03c082b97_key -iv $encrypted_43b03c082b97_iv
+  -in 2018_2_YetAnotherGame_id_rsa.pem.enc -out ./2018_2_YetAnotherGame_id_rsa.pem
+  -d
+

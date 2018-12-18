@@ -1,9 +1,12 @@
 package room
 
 import (
+	"github.com/go-park-mail-ru/2018_2_YetAnotherGame/GameMS/Collision"
 	"encoding/json"
-	"github.com/google/uuid"
+	"fmt"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type Room struct {
@@ -26,10 +29,13 @@ type NewPlayer struct {
 	Username string `json:"username"`
 }
 type NewScore struct {
-
-	Score string `json:"score"`
-	X string `json:"x"`
-	Y string `json:"y"`
+	User        string `json:"user"`
+	Score       string `json:"score"`
+	X           string `json:"x"`
+	Y           string `json:"y"`
+	CollisionX  string `json:"xblock"`
+	CollisionX2 string `json:"x2block"`
+	CollisionY  string `json:"yblock"`
 }
 
 type State struct {
@@ -38,7 +44,7 @@ type State struct {
 }
 
 func (r *Room) Run() {
-	r.Ticker = time.NewTicker(time.Millisecond*100)
+	r.Ticker = time.NewTicker(time.Millisecond * 100)
 	go r.RunBroadcast()
 	for {
 		<-r.Ticker.C
@@ -57,17 +63,22 @@ func (r *Room) RunBroadcast() {
 	for {
 		s := <-r.Broadcast
 		for _, p := range r.Players {
-			err:=p.Send(s)
-			if err!=nil{
+			err := p.Send(s)
+			if err != nil {
 				return
 			}
 		}
 	}
 }
+
 type Message struct {
-	Author string `json:"author"`
+	Author  string `json:"author"`
 	Message string `json:"message"`
 }
+
+//type ColDetect struct {
+//	Collision string `json:"collision"`
+//}
 func (r *Room) ListenToPlayers() {
 	for {
 		m := <-r.Message
@@ -78,12 +89,22 @@ func (r *Room) ListenToPlayers() {
 			json.Unmarshal(m.Payload, np)
 			m.Player.Data.Username = np.Username
 		case "Info":
-		//	log.Printf("rmessage %s %v", m.Player.ID, string(m.Payload))
+			//	log.Printf("rmessage %s %v", m.Player.ID, string(m.Payload))
 			ns := &NewScore{}
 			json.Unmarshal(m.Payload, ns)
 			m.Player.Data.Score = ns.Score
-			m.Player.Data.Position.X=ns.X
-			m.Player.Data.Position.Y=ns.Y
+			m.Player.Data.Position.X = ns.X
+			m.Player.Data.Position.Y = ns.Y
+			ok := Collision.Collision(ns.X, ns.Y, ns.CollisionX, ns.CollisionY, ns.CollisionX2)
+			if ok {
+				//name:=[]PlayerData{}
+				col := Message{Message: "Collision", Author: ns.User}
+				//us:=PlayerData{Username:ns.User}
+				//name=append(name,us)
+				fmt.Println("coll")
+				state := State{Message: &col}
+				r.Broadcast <- &state
+			}
 		case "Chat":
 			//log.Printf("rmessage %s %v", m.Player.ID, string(m.Payload))
 			msg := &Message{}
@@ -92,7 +113,6 @@ func (r *Room) ListenToPlayers() {
 				Message: msg,
 			}
 			r.Broadcast <- &state
-
 
 		}
 	}

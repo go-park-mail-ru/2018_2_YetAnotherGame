@@ -1,10 +1,11 @@
 package game
 
 import (
-	"GameMS/room"
+	"github.com/go-park-mail-ru/2018_2_YetAnotherGame/GameMS/room"
 	"fmt"
-	"github.com/prometheus/client_golang/prometheus"
 	"log"
+
+	"github.com/prometheus/client_golang/prometheus"
 
 	"github.com/google/uuid"
 
@@ -16,18 +17,18 @@ type Metrics struct {
 }
 
 type Game struct {
-	Rooms    map[string]*room.Room
-	MaxRooms int
-	Register chan *websocket.Conn
+	Rooms       map[string]*room.Room
+	MaxRooms    int
+	Register    chan *websocket.Conn
 	AmountRooms int
 }
 
 func New() *Game {
 	return &Game{
-		Rooms:    make(map[string]*room.Room),
-		MaxRooms: 2,
-		Register: make(chan *websocket.Conn),
-		AmountRooms:0,
+		Rooms:       make(map[string]*room.Room),
+		MaxRooms:    2,
+		Register:    make(chan *websocket.Conn),
+		AmountRooms: 0,
 	}
 }
 
@@ -51,7 +52,7 @@ func (g *Game) FindRoom() *room.Room {
 	r := room.New()
 	go r.ListenToPlayers()
 	g.Rooms[r.ID] = r
-	g.AmountRooms+=1
+	g.AmountRooms += 1
 	log.Println("room %s created", r.ID)
 	return r
 }
@@ -63,7 +64,7 @@ func (g *Game) ProcessConn(conn *websocket.Conn) {
 		Conn: conn,
 		ID:   id,
 	}
-	p.Data.ID=p.ID
+	p.Data.ID = p.ID
 	r := g.FindRoom()
 	if r == nil {
 		return

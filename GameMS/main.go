@@ -1,19 +1,21 @@
 package main
 
 import (
-	"GameMS/game"
-	"GameMS/middlewares"
+	"github.com/go-park-mail-ru/2018_2_YetAnotherGame/GameMS/game"
+	"github.com/go-park-mail-ru/2018_2_YetAnotherGame/GameMS/middlewares"
+	"log"
+	"net/http"
+
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/cors"
 	"github.com/sirupsen/logrus"
-	"log"
-	"net/http"
+	"google.golang.org/grpc"
 )
 
-func  Test(m *game.Metrics, g *game.Game, w http.ResponseWriter, r *http.Request) {
+func Test(m *game.Metrics, g *game.Game, w http.ResponseWriter, r *http.Request) {
 	log.Printf("open connection")
 	upgrader := websocket.Upgrader{
 		CheckOrigin: func(r *http.Request) bool { return true },
@@ -30,10 +32,10 @@ func  Test(m *game.Metrics, g *game.Game, w http.ResponseWriter, r *http.Request
 func main() {
 	addr := "localhost"
 	port := 8000
-	met:=game.Metrics{}
-	met.Counter=prometheus.NewSummaryVec(prometheus.SummaryOpts{
-		Name:"method_counter",
-		Help:"count",
+	met := game.Metrics{}
+	met.Counter = prometheus.NewSummaryVec(prometheus.SummaryOpts{
+		Name: "method_counter",
+		Help: "count",
 	},
 		[]string{"rooms"},
 	)
@@ -47,7 +49,7 @@ func main() {
 	AccessLogOut := new(middlewares.AccessLogger)
 	c := cors.New(cors.Options{
 		AllowCredentials: true,
-		AllowedOrigins:   []string{"http://127.0.0.1:3001"},                           // All origins
+		AllowedOrigins:   []string{"http://127.0.0.1:3000"},                           // All origins
 		AllowedMethods:   []string{"GET", "HEAD", "POST", "PUT", "OPTIONS", "DELETE"}, // Allowing only get, just an example
 	})
 	g := game.New()
@@ -56,7 +58,11 @@ func main() {
 	routerAuth.HandleFunc("/ws", func(output http.ResponseWriter, request *http.Request) {
 		Test(&met, g, output, request)
 	})
-	authHandler := middlewares.AuthMiddleware(routerAuth)
+	conn, err := grpc.Dial(":7777", grpc.WithInsecure())
+	if err != nil {
+		logrus.Fatalf("did not connect: %s", err)
+	}
+	authHandler := middlewares.AuthMiddleware(routerAuth, conn)
 	router := mux.NewRouter()
 	router.Handle("/metrics", promhttp.Handler())
 	router.Handle("/ws", authHandler)
@@ -64,6 +70,7 @@ func main() {
 		"mode":   "[access_log]",
 		"logger": "LOGRUS",
 	})
+
 	logrus.SetFormatter(&logrus.JSONFormatter{})
 	AccessLogOut.LogrusLogger = contextLogger
 	siteHandler := AccessLogOut.AccessLogMiddleware(router)
