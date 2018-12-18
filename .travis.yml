@@ -6,6 +6,8 @@ branches:
 language: go
 go:
 - 1.11.x
+ignore:
+- vendor/*
 script:
 - echo "hi"
 - go env GOPATH
