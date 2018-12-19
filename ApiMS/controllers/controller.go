@@ -66,6 +66,9 @@ func (env *Environment) RegistrationHandle(w http.ResponseWriter, r *http.Reques
 		Value:   ID.String(),
 		Expires: time.Now().Add(60 * time.Minute),
 		Path:    "/",
+		Secure: true,
+                        HttpOnly: true,
+
 	}
 
 	http.SetCookie(w, cookie)
@@ -114,6 +117,9 @@ func (env *Environment) LoginHandle(w http.ResponseWriter, r *http.Request) {
 		Value:   session.ID,
 		Expires: time.Now().Add(60 * time.Minute),
 		Path:    "/",
+		Secure: true,
+                        HttpOnly: true,
+
 	}
 	http.SetCookie(w, cookie)
 	err := functions.SendStatus(session.ID, w, 201)
@@ -180,6 +186,9 @@ func (env *Environment) LogOutHandle(w http.ResponseWriter, r *http.Request) {
 		Value:   id,
 		Expires: time.Now(),
 		Path:    "/",
+		Secure: true,
+                        HttpOnly: true,
+
 	}
 	http.SetCookie(w, cookie)
 	err := functions.SendStatus(id, w, 201)

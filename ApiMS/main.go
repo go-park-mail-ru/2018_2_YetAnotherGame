@@ -31,7 +31,7 @@ func (db DbConfig) String() string {
 
 func dbSettings() string {
 	conf := &DbConfig{}
-	toml.DecodeFile("./config/DBsettings.toml", conf)
+	toml.DecodeFile("/home/ubuntu/go/src/config/DBsettings.toml", conf)
 	fmt.Printf("%s", conf.String())
 	return conf.String()
 }
