@@ -1,11 +1,12 @@
 package room
 
 import (
-	"github.com/go-park-mail-ru/2018_2_YetAnotherGame/GameMS/Collision"
 	"encoding/json"
 	"fmt"
+	"log"
 	"time"
 
+	"github.com/go-park-mail-ru/2018_2_YetAnotherGame/GameMS/Collision"
 	"github.com/google/uuid"
 )
 
@@ -86,12 +87,18 @@ func (r *Room) ListenToPlayers() {
 		switch m.Type {
 		case "newPlayer":
 			np := &NewPlayer{}
-			json.Unmarshal(m.Payload, np)
+			err := json.Unmarshal(m.Payload, np)
+			if err != nil {
+				log.Println(err)
+			}
 			m.Player.Data.Username = np.Username
 		case "Info":
 			//	log.Printf("rmessage %s %v", m.Player.ID, string(m.Payload))
 			ns := &NewScore{}
-			json.Unmarshal(m.Payload, ns)
+			err := json.Unmarshal(m.Payload, ns)
+			if err != nil {
+				log.Println(err)
+			}
 			m.Player.Data.Score = ns.Score
 			m.Player.Data.Position.X = ns.X
 			m.Player.Data.Position.Y = ns.Y
@@ -108,7 +115,10 @@ func (r *Room) ListenToPlayers() {
 		case "Chat":
 			//log.Printf("rmessage %s %v", m.Player.ID, string(m.Payload))
 			msg := &Message{}
-			json.Unmarshal(m.Payload, msg)
+			err := json.Unmarshal(m.Payload, msg)
+			if err != nil {
+				log.Println(err)
+			}
 			state := State{
 				Message: msg,
 			}

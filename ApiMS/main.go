@@ -31,7 +31,10 @@ func (db DbConfig) String() string {
 
 func dbSettings() string {
 	conf := &DbConfig{}
-	toml.DecodeFile("/home/ubuntu/go/src/config/DBsettings.toml", conf)
+	_, err:=toml.DecodeFile("/home/ubuntu/go/src/config/DBsettings.toml", conf)
+	if err!=nil{
+		fmt.Println(err)
+	}
 	fmt.Printf("%s", conf.String())
 	return conf.String()
 }
@@ -55,5 +58,9 @@ func main() {
 			),
 		),
 	)
-	http.ListenAndServe(":8000", r)
+	//http.ListenAndServe(":8000", r)
+	err:=http.ListenAndServeTLS(":8081", "/etc/letsencrypt/live/yet-another-game.ml/fullchain.pem","/etc/letsencrypt/live/yet-another-game.ml/privkey.pem",r)
+	if err!=nil{
+		fmt.Println(err)
+	}
 }

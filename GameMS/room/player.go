@@ -41,7 +41,7 @@ func (p *Player) Listen() {
 		if websocket.IsUnexpectedCloseError(err) {
 			log.Printf("player %s was disconnected", p.ID)
 			p.Room.Unregister <- p
-			p.Conn.Close()
+			//p.Conn.Close()
 			return
 		}
 		m.Player = p

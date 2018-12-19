@@ -26,7 +26,7 @@ type Game struct {
 func New() *Game {
 	return &Game{
 		Rooms:       make(map[string]*room.Room),
-		MaxRooms:    2,
+		MaxRooms:    20,
 		Register:    make(chan *websocket.Conn),
 		AmountRooms: 0,
 	}
