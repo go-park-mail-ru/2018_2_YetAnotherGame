@@ -25,9 +25,9 @@ script:
 - gometalinter --config=/home/travis/gopath/src/github.com/go-park-mail-ru/2018_2_YetAnotherGame/.gometalinter.json ../go-park-mail-ru/2018_2_YetAnotherGame/GameMS/game 
 - scp -r -i /home/travis/gopath/src/github.com/go-park-mail-ru/2018_2_YetAnotherGame/2018_2_YetAnotherGame_id_rsa.pem /home/travis/gopath/src/github.com/go-park-mail-ru/2018_2_YetAnotherGame ubuntu@95.163.215.234:/home/ubuntu/go/src/2018_2_YetAnotherGame
 - ssh -i /home/travis/gopath/src/github.com/go-park-mail-ru/2018_2_YetAnotherGame/2018_2_YetAnotherGame_id_rsa.pem ubuntu@95.163.215.234 'screen -ls | grep pts | cut -d. -f1 | awk '{print $1}' | xargs kill' || true
-- ssh -i /home/travis/gopath/src/github.com/go-park-mail-ru/2018_2_YetAnotherGame/2018_2_YetAnotherGame_id_rsa.pem ubuntu@95.163.215.234 'screen sudo go run /home/travis/gopath/src/github.com/go-park-mail-ru/2018_2_YetAnotherGame/ApiMS/main.go'
-- ssh -i /home/travis/gopath/src/github.com/go-park-mail-ru/2018_2_YetAnotherGame/2018_2_YetAnotherGame_id_rsa.pem ubuntu@95.163.215.234 'screen sudo go run /home/travis/gopath/src/github.com/go-park-mail-ru/2018_2_YetAnotherGame/GameMS/main.go'
-- ssh -i /home/travis/gopath/src/github.com/go-park-mail-ru/2018_2_YetAnotherGame/2018_2_YetAnotherGame_id_rsa.pem ubuntu@95.163.215.234 'screen sudo go run /home/travis/gopath/src/github.com/go-park-mail-ru/2018_2_YetAnotherGame/authorization/server/main.go'
+- ssh -i /home/travis/gopath/src/github.com/go-park-mail-ru/2018_2_YetAnotherGame/2018_2_YetAnotherGame_id_rsa.pem ubuntu@95.163.215.234 'screen sudo go run /home/ubuntu/go/src/2018_2_YetAnotherGame/ApiMS/main.go'
+- ssh -i /home/travis/gopath/src/github.com/go-park-mail-ru/2018_2_YetAnotherGame/2018_2_YetAnotherGame_id_rsa.pem ubuntu@95.163.215.234 'screen sudo go run /home/ubuntu/go/src/2018_2_YetAnotherGame/GameMS/main.go'
+- ssh -i /home/travis/gopath/src/github.com/go-park-mail-ru/2018_2_YetAnotherGame/2018_2_YetAnotherGame_id_rsa.pem ubuntu@95.163.215.234 'screen sudo go run /home/ubuntu/go/src/2018_2_YetAnotherGame/authorization/server/main.go'
 before_install:
 - openssl aes-256-cbc -K $encrypted_43b03c082b97_key -iv $encrypted_43b03c082b97_iv
   -in 2018_2_YetAnotherGame_id_rsa.pem.enc -out ./2018_2_YetAnotherGame_id_rsa.pem
