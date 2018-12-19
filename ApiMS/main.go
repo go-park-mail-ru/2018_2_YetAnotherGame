@@ -1,10 +1,11 @@
 package main
 
 import (
-	"github.com/go-park-mail-ru/2018_2_YetAnotherGame/ApiMS/controllers"
-	"github.com/go-park-mail-ru/2018_2_YetAnotherGame/ApiMS/middlewares"
-	"github.com/go-park-mail-ru/2018_2_YetAnotherGame/ApiMS/routes"
+	"2018_2_YetAnotherGame/ApiMS/controllers"
+	"2018_2_YetAnotherGame/ApiMS/middlewares"
+	"2018_2_YetAnotherGame/ApiMS/routes"
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -31,7 +32,10 @@ func (db DbConfig) String() string {
 
 func dbSettings() string {
 	conf := &DbConfig{}
-	toml.DecodeFile("./config/DBsettings.toml", conf)
+	_, err := toml.DecodeFile("./config/DBsettings.toml", conf)
+	if err != nil {
+		log.Println("Error while decoding file")
+	}
 	fmt.Printf("%s", conf.String())
 	return conf.String()
 }
@@ -55,5 +59,8 @@ func main() {
 			),
 		),
 	)
-	http.ListenAndServe(":8000", r)
+	err := http.ListenAndServe(":8000", r)
+	if err != nil {
+		log.Println("Error with http ListenAndServe")
+	}
 }
