@@ -5,7 +5,7 @@ import (
 	"github.com/go-park-mail-ru/2018_2_YetAnotherGame/GameMS/middlewares"
 	"log"
 	"net/http"
-	"fmt"
+	
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 	"github.com/prometheus/client_golang/prometheus"
@@ -77,7 +77,7 @@ func main() {
 	siteHandler = middlewares.PanicMiddleware(siteHandler, &met)
 	handler := c.Handler(siteHandler)
 	//http.ListenAndServe(":8081", handler)
-	err:=http.ListenAndServeTLS(":9090", "/etc/letsencrypt/live/yet-another-game.ml/fullchain.pem","/etc/letsencrypt/live/yet-another-game.ml/privkey.pem",handler)
+	err=http.ListenAndServeTLS(":9090", "/etc/letsencrypt/live/yet-another-game.ml/fullchain.pem","/etc/letsencrypt/live/yet-another-game.ml/privkey.pem",handler)
 	if err!=nil{
 		log.Println(err)
 	}
