@@ -14,15 +14,15 @@ script:
 - go get -u github.com/alecthomas/gometalinter
 - gometalinter --install
 - cd /home/travis/gopath/src/github.com/alecthomas/
-- gometalinter --config=/home/travis/gopath/src/github.com/go-park-mail-ru/2018_2_YetAnotherGame/.gometalinter.json ../go-park-mail-ru/2018_2_YetAnotherGame/ApiMS/grpcModules/ || true
-- gometalinter --config=/home/travis/gopath/src/github.com/go-park-mail-ru/2018_2_YetAnotherGame/.gometalinter.json ../go-park-mail-ru/2018_2_YetAnotherGame/ApiMS/infostructures/ || true
-- gometalinter --config=/home/travis/gopath/src/github.com/go-park-mail-ru/2018_2_YetAnotherGame/.gometalinter.json ../go-park-mail-ru/2018_2_YetAnotherGame/ApiMS/middlewares/ || true
-- gometalinter --config=/home/travis/gopath/src/github.com/go-park-mail-ru/2018_2_YetAnotherGame/.gometalinter.json ../go-park-mail-ru/2018_2_YetAnotherGame/ApiMS/resources/ || true
-- gometalinter --config=/home/travis/gopath/src/github.com/go-park-mail-ru/2018_2_YetAnotherGame/.gometalinter.json ../go-park-mail-ru/2018_2_YetAnotherGame/ApiMS/routes/ || true
-- gometalinter --config=/home/travis/gopath/src/github.com/go-park-mail-ru/2018_2_YetAnotherGame/.gometalinter.json ../go-park-mail-ru/2018_2_YetAnotherGame/ApiMS/ || true
-- gometalinter --config=/home/travis/gopath/src/github.com/go-park-mail-ru/2018_2_YetAnotherGame/.gometalinter.json ../go-park-mail-ru/2018_2_YetAnotherGame/GameMS/ || true
-- gometalinter --config=/home/travis/gopath/src/github.com/go-park-mail-ru/2018_2_YetAnotherGame/.gometalinter.json ../go-park-mail-ru/2018_2_YetAnotherGame/GameMS/room || true
-- gometalinter --config=/home/travis/gopath/src/github.com/go-park-mail-ru/2018_2_YetAnotherGame/.gometalinter.json ../go-park-mail-ru/2018_2_YetAnotherGame/GameMS/game || true
+- gometalinter --config=/home/travis/gopath/src/github.com/go-park-mail-ru/2018_2_YetAnotherGame/.gometalinter.json ../go-park-mail-ru/2018_2_YetAnotherGame/ApiMS/grpcModules/
+- gometalinter --config=/home/travis/gopath/src/github.com/go-park-mail-ru/2018_2_YetAnotherGame/.gometalinter.json ../go-park-mail-ru/2018_2_YetAnotherGame/ApiMS/infostructures/
+- gometalinter --config=/home/travis/gopath/src/github.com/go-park-mail-ru/2018_2_YetAnotherGame/.gometalinter.json ../go-park-mail-ru/2018_2_YetAnotherGame/ApiMS/middlewares/
+- gometalinter --config=/home/travis/gopath/src/github.com/go-park-mail-ru/2018_2_YetAnotherGame/.gometalinter.json ../go-park-mail-ru/2018_2_YetAnotherGame/ApiMS/resources/ 
+- gometalinter --config=/home/travis/gopath/src/github.com/go-park-mail-ru/2018_2_YetAnotherGame/.gometalinter.json ../go-park-mail-ru/2018_2_YetAnotherGame/ApiMS/routes/ 
+- gometalinter --config=/home/travis/gopath/src/github.com/go-park-mail-ru/2018_2_YetAnotherGame/.gometalinter.json ../go-park-mail-ru/2018_2_YetAnotherGame/ApiMS/ 
+- gometalinter --config=/home/travis/gopath/src/github.com/go-park-mail-ru/2018_2_YetAnotherGame/.gometalinter.json ../go-park-mail-ru/2018_2_YetAnotherGame/GameMS/ 
+- gometalinter --config=/home/travis/gopath/src/github.com/go-park-mail-ru/2018_2_YetAnotherGame/.gometalinter.json ../go-park-mail-ru/2018_2_YetAnotherGame/GameMS/room 
+- gometalinter --config=/home/travis/gopath/src/github.com/go-park-mail-ru/2018_2_YetAnotherGame/.gometalinter.json ../go-park-mail-ru/2018_2_YetAnotherGame/GameMS/game 
 - scp -r -i /home/travis/gopath/src/github.com/go-park-mail-ru/2018_2_YetAnotherGame/2018_2_YetAnotherGame_id_rsa.pem /home/travis/gopath/src/github.com/go-park-mail-ru/2018_2_YetAnotherGame ubuntu@95.163.215.234:/home/ubuntu/go/src/2018_2_YetAnotherGame
 - screen -ls | grep pts | cut -d. -f1 | awk '{print $1}' | xargs kill
 - screen go run /home/travis/gopath/src/github.com/go-park-mail-ru/2018_2_YetAnotherGame/ApiMS/main.go
