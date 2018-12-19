@@ -43,7 +43,7 @@ func main() {
 	env := controllers.Environment{}
 	env.InitLog()
 	env.InitDB("postgres", dbSettings())
-	env.InitGrpc(":7777")
+	env.InitGrpc(":8082")
 	env.Counter = prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name: "method_counter",
 		Help: "counter",

@@ -58,7 +58,7 @@ func main() {
 	routerAuth.HandleFunc("/ws", func(output http.ResponseWriter, request *http.Request) {
 		Test(&met, g, output, request)
 	})
-	conn, err := grpc.Dial(":7777", grpc.WithInsecure())
+	conn, err := grpc.Dial(":8082", grpc.WithInsecure())
 	if err != nil {
 		logrus.Fatalf("did not connect: %s", err)
 	}
