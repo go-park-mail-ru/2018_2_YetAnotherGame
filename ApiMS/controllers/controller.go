@@ -11,7 +11,8 @@ import (
 	"net/http"
 	"strconv"
 	"time"
-
+	"encoding/json"
+	"hash/fnv"
 	"github.com/mailru/easyjson"
 
 	"github.com/google/uuid"
@@ -36,7 +37,11 @@ type VKResponseData struct {
 	}
 	Email string
 }
-
+func hash(s string) int {
+	h := fnv.New32a()
+	h.Write([]byte(s))
+	return int(h.Sum32())
+}
 func (env *Environment) RegistrationHandle(w http.ResponseWriter, r *http.Request) {
 	user := models.User{}
 	//json.NewDecoder(r.Body).Decode(&user)
