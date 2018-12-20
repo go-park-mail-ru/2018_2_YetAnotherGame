@@ -225,7 +225,6 @@ func (env *Environment) UpdateHandle(w http.ResponseWriter, r *http.Request) {
 		logrus.Error(err)
 	}
 }
-
 func (env *Environment) VKRegister(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	code := r.FormValue("code")
@@ -266,10 +265,50 @@ func (env *Environment) VKRegister(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := VKResponseData{}
-	err = easyjson.Unmarshal(body, &data)
+	err = json.Unmarshal(body, &data)
 	if err != nil {
 		fmt.Println(err)
 	}
-	data.Email = email //Теперь из Имени и Фамилии можно сделать Юзернейм и не будет только пароля, но можно добавить токен для валидации
-	//TODO
+	user := models.User{}
+	session := modelService.GetSessionByEmail(env.DB, email)
+
+	if session.Email==email {
+		cookie := &http.Cookie{
+			Name:    "sessionid",
+			Value:   session.ID,
+			Expires: time.Now().Add(60 * time.Minute),
+			Path:    "/",
+		}
+
+		http.SetCookie(w, cookie)
+		http.Redirect(w, r, "http://127.0.0.1:3000", 302)
+		if err != nil {
+			logrus.Error(err)
+		}
+		return
+	}
+	data.Email = email 
+	ID := uuid.New()
+	user.ID = ID.String()
+	session.ID = ID.String()
+	session.Email = email
+	user.Username=email
+	user.Email=email
+	user.Password=string(hash(email))
+	env.DB.Create(&session)
+	env.DB.Create(&user)
+
+	cookie := &http.Cookie{
+		Name:    "sessionid",
+		Value:   ID.String(),
+		Expires: time.Now().Add(60 * time.Minute),
+		Path:    "/",
+	}
+
+	http.SetCookie(w, cookie)
+	err = functions.SendStatus(ID.String(), w, 201)
+	env.Counter.WithLabelValues(r.URL.Path, "201").Inc()
+	if err != nil {
+		logrus.Error(err)
+	}
 }
